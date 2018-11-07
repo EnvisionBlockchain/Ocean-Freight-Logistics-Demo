@@ -7,7 +7,7 @@ export default () => {
     <Menu style={{ marginTop:'0px',}} size={'large'}>
       <Menu.Item><Link to='/'>Azure UI</Link></Menu.Item>
       <Menu.Menu position="right">
-        <Menu.Item><Link to='/someLink'><Icon name='tasks' />Some Link</Link></Menu.Item>
+        <Menu.Item><Link to='/helloworld'><Icon name='tasks' />Hello World!</Link></Menu.Item>
       </Menu.Menu>
     </Menu>
   );

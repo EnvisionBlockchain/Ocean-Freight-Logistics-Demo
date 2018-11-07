@@ -1,4 +1,4 @@
-pragma solidity ^0.4.20;
+pragma solidity ^0.4.24;
 
 contract WorkbenchBase {
     event WorkbenchContractCreated(string applicationName, string workflowName, address originatingAddress);
@@ -46,9 +46,7 @@ contract SupplyChainTransportation is WorkbenchBase('SupplyChainTransportation',
     string public ReleaseOrderDocument;
     string public DeliveryOrderDocument;
 
-    function SupplyChainTransportation(string description, address freightCarrier,
-        address originCustoms, address consignee) public
-    {
+    constructor(string description, address freightCarrier, address originCustoms, address consignee) public{
         InstanceShipper = msg.sender;
         Description = description;
         State = StateType.BeginTrade;
@@ -58,8 +56,7 @@ contract SupplyChainTransportation is WorkbenchBase('SupplyChainTransportation',
         ContractCreated();
     }
 
-    function Terminate() public
-    {
+    function Terminate() public{
         if (State == StateType.ExportClearance) 
         {
             require(msg.sender == InstanceOriginCustoms);

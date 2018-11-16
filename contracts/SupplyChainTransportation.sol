@@ -7,17 +7,17 @@ contract WorkbenchBase {
     string internal ApplicationName;
     string internal WorkflowName;
 
-    function WorkbenchBase(string applicationName, string workflowName) internal {
+    constructor(string applicationName, string workflowName) internal {
         ApplicationName = applicationName;
         WorkflowName = workflowName;
     }
 
     function ContractCreated() internal {
-        WorkbenchContractCreated(ApplicationName, WorkflowName, msg.sender);
+        emit WorkbenchContractCreated(ApplicationName, WorkflowName, msg.sender);
     }
 
     function ContractUpdated(string action) internal {
-        WorkbenchContractUpdated(ApplicationName, WorkflowName, action, msg.sender);
+        emit WorkbenchContractUpdated(ApplicationName, WorkflowName, action, msg.sender);
     }
 }
 
@@ -52,7 +52,7 @@ contract SupplyChainTransportation is WorkbenchBase('SupplyChainTransportation',
         State = StateType.BeginTrade;
         InstanceFreightCarrier = freightCarrier;
         InstanceOriginCustoms = originCustoms;
-        InstanceConsignee = consignee;
+        InstanceConsignee = consignee;        
         ContractCreated();
     }
 

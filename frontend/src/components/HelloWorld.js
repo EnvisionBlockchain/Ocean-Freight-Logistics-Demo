@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import {Loader, Dimmer, Form, Input, Button, Message} from 'semantic-ui-react';
 //import {Link} from 'react-router-dom';
 import web3 from '../ethereum/web3';
-import ContractInstance from '../ethereum/contractInstance';
+import {helloWorldInstance} from '../ethereum/contractInstance';
 
 class HelloWorld extends Component {
     state = {
@@ -19,7 +19,7 @@ class HelloWorld extends Component {
     document.title = "Azure UI | HelloWorld";
 
     const accounts = await web3.eth.getAccounts();
-    let res = await ContractInstance.methods.getMsg().call({from:accounts[0]});
+    let res = await helloWorldInstance.methods.getMsg().call({from:accounts[0]});
     this.setState({loadingData:false, account:accounts[0], existingMsg:res});
   }
 
@@ -28,7 +28,7 @@ class HelloWorld extends Component {
 
     this.setState({errorMessage:'', loading:true, msg:''});
     try{
-      let res = await ContractInstance.methods.postMsg(this.state.msgVal).send({from:this.state.account});
+      let res = await helloWorldInstance.methods.postMsg(this.state.msgVal).send({from:this.state.account});
       console.log(res);
       this.setState({msg:'Message pushed to Azure PoA blockchain!'});
     }catch(err){

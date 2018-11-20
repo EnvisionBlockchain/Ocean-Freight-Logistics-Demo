@@ -28,6 +28,14 @@ contract SupplyChainTransportation is WorkbenchBase('SupplyChainTransportation',
     string public Description;
     StateType public State;
 
+    struct Doc{
+        string name;
+        string size;
+        string docID;
+    }
+
+    mapping(string => Doc) document;
+
     address public InstanceFreightCarrier;
     address public InstanceOriginCustoms;
     address public InstanceDrayageAgent;

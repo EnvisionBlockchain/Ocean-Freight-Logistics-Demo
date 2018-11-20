@@ -1,16 +1,18 @@
 import React, { Component } from 'react';
-import {Loader, Dimmer, Button, Modal} from 'semantic-ui-react';
-//import {Link} from 'react-router-dom';
+import {Loader, Dimmer, Button, Modal, Message} from 'semantic-ui-react';
 import web3 from '../ethereum/web3';
 import {SupplyChainInstance} from '../ethereum/contractInstance';
-import ExportClearance from './ExportClearance';
+import SendForExportClearance from '../stages/1_begin_trade';
+import ExportClearanceAction from '../stages/2_export_clearance';
 
 class Home extends Component {
     state = {
+    msg:'',
     loadingData:false,
     account:'',
     contractState:'',
     instanceShipper:'',
+    instanceOriginCustoms:'',
   }
 
   async componentDidMount(){
@@ -19,13 +21,10 @@ class Home extends Component {
 
     const accounts = await web3.eth.getAccounts();
     let contractState = await SupplyChainInstance.methods.State().call({from:accounts[0]});
-    if (contractState === '0'){
-      contractState = 'Begin Trade';
-    }
-
     let instanceShipper = await SupplyChainInstance.methods.InstanceShipper().call({from:accounts[0]});
+    let instanceOriginCustoms = await SupplyChainInstance.methods.InstanceOriginCustoms().call({from:accounts[0]});
 
-    this.setState({loadingData:false, account:accounts[0], contractState, instanceShipper});
+    this.setState({loadingData:false, account:accounts[0], contractState, instanceShipper, instanceOriginCustoms});
   }
 
   render() {
@@ -40,15 +39,12 @@ class Home extends Component {
     return (
       <div>
         <h1>Supplychain Transportation</h1>
-        <b>Contract State:</b> {this.state.contractState}
-        <br/>
-        {this.state.instanceShipper===this.state.account && 
-           <Modal trigger={<Button primary>Export Clearance</Button>}>
-		    <Modal.Header>Initiate Export Clearance</Modal.Header>
-		    <Modal.Content>
-		      <ExportClearance account={this.state.account} />
-		    </Modal.Content>
-		  </Modal>
+        {this.state.instanceShipper===this.state.account && this.state.contractState==='0' &&
+          <SendForExportClearance account={this.state.account} />
+        }
+
+        {this.state.instanceOriginCustoms===this.state.account && this.state.contractState==='1' &&
+          <ExportClearanceAction account={this.state.account} />
         }
 
       </div>

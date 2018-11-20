@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import {Loader, Dimmer, Form, Button, Input, Message, Modal} from 'semantic-ui-react';
 import SparkMD5 from 'spark-md5';
-import {SupplyChainInstance} from '../ethereum/contractInstance';
 
 class SendForExportClearance extends Component {
   state = {
@@ -28,7 +27,7 @@ class SendForExportClearance extends Component {
     this.setState({errorMessage:'', loading:true, msg:''});
 
     try{
-      await SupplyChainInstance.methods.ExportClearance(this.state.seller,this.state.pod, this.state.bank, this.state.cfDocsHash, this.state.cDocsHash).send({from:this.props.account});
+      await this.props.SupplyChainInstance.methods.ExportClearance(this.state.seller,this.state.pod, this.state.bank, this.state.cfDocsHash, this.state.cDocsHash).send({from:this.props.account});
       this.setState({msg:'Successfully uploaded!'});
     }catch(err){
       this.setState({errorMessage:err.message});

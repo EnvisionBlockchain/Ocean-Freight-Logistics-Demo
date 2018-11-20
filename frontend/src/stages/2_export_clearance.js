@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
 import {Loader, Dimmer, Button, Message, Modal} from 'semantic-ui-react';
-import SparkMD5 from 'spark-md5';
-import {SupplyChainInstance} from '../ethereum/contractInstance';
 
 class ExportClearanceAction extends Component {
   state = {
@@ -19,7 +17,7 @@ class ExportClearanceAction extends Component {
   approveDocuments = async () => {
     this.setState({msg:'',loading:true, errorMessage:''});
     try{
-      await SupplyChainInstance.methods.ApproveExportDocumentation().send({from:this.props.account});
+      await this.props.SupplyChainInstance.methods.ApproveExportDocumentation().send({from:this.props.account});
       this.setState({msg:'Documents Approved!'});
     }catch(err){
       this.setState({errorMessage:err.messsage});
@@ -30,7 +28,7 @@ class ExportClearanceAction extends Component {
   amendDocuments = async () => {
     this.setState({msg:'',loading:true, errorMessage:''});
     try{
-      await SupplyChainInstance.methods.AmendExportDocumentation().send({from:this.props.account});
+      await this.props.SupplyChainInstance.methods.AmendExportDocumentation().send({from:this.props.account});
       this.setState({msg:'Documents Amed Requested!'});
     }catch(err){
       this.setState({errorMessage:err.messsage});
@@ -41,7 +39,7 @@ class ExportClearanceAction extends Component {
   rejectDocuments = async () => {
     this.setState({msg:'',loading:true, errorMessage:''});
     try{
-      await SupplyChainInstance.methods.Terminate().send({from:this.props.account});
+      await this.props.SupplyChainInstance.methods.Terminate().send({from:this.props.account});
       this.setState({msg:'Documents Rejected!'});
     }catch(err){
       this.setState({errorMessage:err.messsage});

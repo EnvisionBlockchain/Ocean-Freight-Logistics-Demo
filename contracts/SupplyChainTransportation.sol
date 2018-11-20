@@ -54,8 +54,8 @@ contract SupplyChainTransportation is WorkbenchBase('SupplyChainTransportation',
     string public ReleaseOrderDocument;
     string public DeliveryOrderDocument;
 
-    constructor(string description, address freightCarrier, address originCustoms, address consignee) public{
-        InstanceShipper = msg.sender;
+    constructor(address creator, string description, address freightCarrier, address originCustoms, address consignee) public{
+        InstanceShipper = creator;
         Description = description;
         State = StateType.BeginTrade;
         InstanceFreightCarrier = freightCarrier;

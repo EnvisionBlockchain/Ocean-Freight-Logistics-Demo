@@ -23,7 +23,6 @@ class Factory extends Component {
 
     const accounts = await web3.eth.getAccounts();
     let deployedChains = await FactoryInstance.methods.getDeployedSupplyChain().call({from:accounts[0]});
-    console.log(deployedChains);
     this.setState({loadingData:false, account:accounts[0], deployedChains});
   }
 

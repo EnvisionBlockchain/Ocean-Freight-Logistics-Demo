@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import {Loader, Dimmer, Form, Input, Message, Button, Card, Modal, Grid, Icon} from 'semantic-ui-react';
 import web3 from '../ethereum/web3';
-//import {SupplyChainInstance} from '../ethereum/contractInstance';
 import {FactoryInstance} from '../ethereum/factoryInstance';
+import {SupplyChainInstance as supplychain_instance} from '../ethereum/contractInstance';
 
 class Factory extends Component {
   state = {
@@ -23,15 +23,24 @@ class Factory extends Component {
 
     const accounts = await web3.eth.getAccounts();
     let deployedChains = await FactoryInstance.methods.getDeployedSupplyChain().call({from:accounts[0]});
-    this.setState({loadingData:false, account:accounts[0], deployedChains});
+    
+    let arr = [];
+    for (var i=0;i<deployedChains.length;i++){
+      const SupplyChainInstance = await supplychain_instance(deployedChains[i]);
+      let contractDesc = await SupplyChainInstance.methods.Description().call({from:accounts[0]});
+      arr.push([deployedChains[i],contractDesc]);
+    }
+
+    this.setState({loadingData:false, account:accounts[0], deployedChains:arr});
   }
 
   renderChains(){
-    const items = this.state.deployedChains.map(chainID => {
+    const items = this.state.deployedChains.map(chainDets => {
       return {
-        href:'/UI-project/'+chainID,
-        header: "Address: " + chainID,
-        description: "Click for Details",
+        href:'/UI-project/'+chainDets[0],
+        header: "Address: " + chainDets[0],
+        description:'Description: ' + chainDets[1],
+        meta: "Click for Details",
         fluid: true,
         style: { overflowWrap: 'break-word' },
       };

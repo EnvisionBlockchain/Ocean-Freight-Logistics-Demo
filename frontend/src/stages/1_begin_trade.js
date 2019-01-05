@@ -1,17 +1,18 @@
 import React, { Component } from 'react';
 import {Loader, Dimmer, Form, Button, Input, Message, Modal} from 'semantic-ui-react';
 import SparkMD5 from 'spark-md5';
+import config from "../config";
+
 const {
   AnonymousCredential,
-  uploadBrowserDataToBlockBlob,
-  downloadBlobToBuffer,
+  uploadBrowserDataToAzureFile,
   Aborter,
-  BlobURL,
-  BlockBlobURL,
-  ContainerURL,
+  FileURL,
+  DirectoryURL,
+  ShareURL,
   ServiceURL,
   StorageURL
-} = require("@azure/storage-blob");
+} = require("@azure/storage-file");
 
 class SendForExportClearance extends Component {
   state = {
@@ -41,8 +42,8 @@ class SendForExportClearance extends Component {
 
     try{
       await this.props.SupplyChainInstance.methods.ExportClearance(this.state.seller,this.state.pod, this.state.bank, this.state.cfDocsHash, this.state.cDocsHash).send({from:this.props.account});
-      this.uploadToAzure(this.state.cfDocs, 'cfDocs');
-      this.uploadToAzure(this.state.cDocs, 'cDocs');
+      this.uploadFileToAzure(this.state.cfDocs, 'cfDocs');
+      this.uploadFileToAzure(this.state.cDocs, 'cDocs');
       this.setState({msg:'Successfully uploaded!'});
     }catch(err){
       this.setState({errorMessage:err.message});
@@ -51,46 +52,52 @@ class SendForExportClearance extends Component {
     this.setState({loading:false});
   }
 
-  uploadToAzure = async (file, docType) => {
+  uploadFileToAzure = async (file, docType) => {
     this.setState({loading:true});
 
     const account = "uploadcustomsfiles";
-    const accountSas = "";
+    //const accountSas = "?sv=2018-03-28&ss=bfqt&srt=sco&sp=rwdlacup&se=2019-04-05T12:16:51Z&st=2019-01-03T04:16:51Z&spr=https&sig=evHty2n7TtrLLpQWy4uQP%2FMlcHJIgmAG8y0AJOwwtTY%3D";
+    const accountSas = config.accountSAS;
 
     const pipeline = StorageURL.newPipeline(new AnonymousCredential(), {
-      retryOptions: { maxTries: 4 },
-      telemetry: { value: "HighLevelSample V1.0.0" }
+      retryOptions: { maxTries: 4 }, // Retry options
+      telemetry: { value: "HighLevelSample V1.0.0" } // Customized telemetry string
     });
+  
+    const serviceURL = new ServiceURL(`https://${account}.file.core.windows.net${accountSas}`,pipeline);
 
-    const serviceURL = new ServiceURL(`https://${account}.blob.core.windows.net${accountSas}`, pipeline);
-
-    // Get container URL
-    const containerURL = ContainerURL.fromServiceURL(serviceURL, "poacontainer");
+    const shareName = "uploadfileshare";
+    const shareURL = ShareURL.fromServiceURL(serviceURL, shareName);
+    
+    // Create a directory
+    const directoryName = "uploadfiledir";
+    const directoryURL = DirectoryURL.fromShareURL(shareURL, directoryName);
 
     // Create a blob
-    const blobName = file.name;
-    const blobURL = BlobURL.fromContainerURL(containerURL, blobName);
-    const blockBlobURL = BlockBlobURL.fromBlobURL(blobURL);
+    let fileName;
+    if (docType === 'cfDocs'){
+      fileName = this.state.cfDocsHash;
+    }else{
+      fileName = this.state.cDocsHash;
+    }
+    const fileURL = FileURL.fromDirectoryURL(directoryURL, fileName);
 
-    await uploadBrowserDataToBlockBlob(Aborter.none, file, blockBlobURL, {
-      blockSize: 4 * 1024 * 1024, // 4MB block size
+    await uploadBrowserDataToAzureFile(Aborter.none, file, fileURL, {
+      rangeSize: 4 * 1024 * 1024, // 4MB range size
       parallelism: 20, // 20 concurrency
       progress: ev => {
-        this.setState({loading: true});
         let prgs = Math.round(ev.loadedBytes * 10000/file.size)/100;
         if (docType === 'cfDocs'){
           this.setState({cfDocsProgress: prgs});
         }else{
           this.setState({cDocsProgress: prgs});
         }
-
-        this.setState({loading:false});
       }
     });
 
     this.setState({loading:false});
   }
-
+  
   captureDocs = (file, docType) => {
     this.setState({errorMessage:'', loading:true, msg:''});
 

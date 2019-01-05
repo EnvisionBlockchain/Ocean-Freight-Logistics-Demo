@@ -4,6 +4,7 @@ import web3 from '../ethereum/web3';
 import {SupplyChainInstance as supplychain_instance} from '../ethereum/contractInstance';
 import SendForExportClearance from '../stages/1_begin_trade';
 import ExportClearanceAction from '../stages/2_export_clearance';
+import InitiateShipment from "../stages/3_shipment_initiation";
 
 class Home extends Component {
     state = {
@@ -47,6 +48,10 @@ class Home extends Component {
 
         {this.state.instanceOriginCustoms===this.state.account && this.state.contractState==='1' &&
           <ExportClearanceAction account={this.state.account} SupplyChainInstance={this.state.SupplyChainInstance} />
+        }
+
+        {this.state.instanceShipper===this.state.account && this.state.contractState==='2' &&
+          <InitiateShipment account={this.state.account} SupplyChainInstance={this.state.SupplyChainInstance} />
         }
 
       </div>

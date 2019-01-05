@@ -1,17 +1,99 @@
 import React, { Component } from 'react';
-import {Loader, Dimmer, Button, Message, Modal} from 'semantic-ui-react';
+import {Loader, Dimmer, Button, Message, Modal, Form, Input} from 'semantic-ui-react';
+import SparkMD5 from 'spark-md5';
+import config from "../config";
+
+const {
+  AnonymousCredential,
+  Aborter,
+  FileURL,
+  DirectoryURL,
+  ShareURL,
+  ServiceURL,
+  StorageURL
+} = require("@azure/storage-file");
 
 class ExportClearanceAction extends Component {
   state = {
     msg:'',
     errorMessage:'',
     loadingData:false,
+    cURL:'',
+    cfURL:'',
+    verifyHash:'',
+    verified:false,
   }
 
   async componentDidMount(){
     this.setState({loadingData:true});
     document.title = "Azure UI";
+
+    const cfDocsHash = await this.props.SupplyChainInstance.methods.ExportDocument().call({from:this.props.account});
+    const cDocsHash = await this.props.SupplyChainInstance.methods.CustomsDocument().call({from:this.props.account});
+    this.setState({cfDocsHash, cDocsHash});
+    this.downloadFileFromAzure('cfDocs');
+    this.downloadFileFromAzure('cDocs');
+
     this.setState({loadingData:false});
+  }
+
+  captureDocs = (file) => {
+    this.setState({errorMessage:'', loading:true, msg:''});
+
+    if (typeof file !== 'undefined'){
+      try{
+        let reader = new window.FileReader()
+        reader.readAsArrayBuffer(file)
+        reader.onloadend = async () => {
+          const buffer = Buffer.from(reader.result);
+          var spark = new SparkMD5.ArrayBuffer();
+          spark.append(buffer);
+          let hash = spark.end();
+          this.setState({verifyHash:hash.toString(), verified:true});
+        }
+      }catch(err){
+        console.log("error: ",err.message);
+      }
+    }else{
+      this.setState({errorMessage:'No file selected!'});
+    }
+    this.setState({loading:false});
+  }
+
+  downloadFileFromAzure = async (docType) => {
+    this.setState({loading:true});
+
+    const account = "uploadcustomsfiles";
+    const accountSas = config.accountSAS;
+
+    const pipeline = StorageURL.newPipeline(new AnonymousCredential(), {
+      retryOptions: { maxTries: 4 }, // Retry options
+      telemetry: { value: "HighLevelSample V1.0.0" } // Customized telemetry string
+    });
+  
+    const serviceURL = new ServiceURL(`https://${account}.file.core.windows.net${accountSas}`,pipeline);
+    const shareName = "uploadfileshare";
+    const shareURL = ShareURL.fromServiceURL(serviceURL, shareName);
+    
+    const directoryName = "uploadfiledir";
+    const directoryURL = DirectoryURL.fromShareURL(shareURL, directoryName);
+
+    let fileName;
+    if (docType === 'cfDocs'){
+      fileName = this.state.cfDocsHash;
+    }else{
+      fileName = this.state.cDocsHash;
+    }
+    const fileURL = FileURL.fromDirectoryURL(directoryURL, fileName);
+    const url = fileURL.storageClientContext.url;
+
+    if (docType === 'cfDocs'){
+      this.setState({cfURL:url});
+    }else{
+      this.setState({cURL: url});
+    }
+
+    this.setState({loading:false});
   }
 
   approveDocuments = async () => {
@@ -65,6 +147,13 @@ class ExportClearanceAction extends Component {
       statusMessage = <Message floating negative header="Oops!" content={this.state.errorMessage} />;
     }
 
+    let verifyMsg ='';
+    if (this.state.verifyHash===this.state.cfDocsHash || this.state.verifyHash===this.state.cDocsHash){
+      verifyMsg = "File is successfully verified. Integrity check successfully passed!";
+    }else{
+      verifyMsg = "Integrity check not passed or file is different:/";
+    }
+  
     return (
       <div>
         <b>Contract State:</b> Export Clearance<br/>
@@ -94,6 +183,31 @@ class ExportClearanceAction extends Component {
             {statusMessage}
           </Modal.Content>
         </Modal>
+
+        <br/><br/>
+        <a href={this.state.cfURL} download={this.state.cfURL}><Button primary>Download Export Docs</Button></a>
+        <a href={this.state.cURL} download={this.state.cfURL}><Button primary>Download Customs Docs</Button></a>
+
+        <br/><br/>
+
+        <Modal trigger={<Button primary>Verify Document</Button>}>
+          <Modal.Header>Verify The Downloaded Documents</Modal.Header>
+          <Modal.Content>
+            <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>
+              <Form.Field>
+                <label>Choose either Customs or Exports Document</label>
+                <Input type='file' onChange={event => {this.captureDocs(event.target.files[0])}} />
+                {this.state.verified && verifyMsg!=='' &&
+                  <div>{verifyMsg}</div>
+                }
+              </Form.Field>
+              <Button loading={this.state.loading} primary basic type='submit'>Verify</Button>
+              <Message error header="Oops!" content={this.state.errorMessage} />
+              {statusMessage}
+            </Form>
+          </Modal.Content>
+        </Modal>
+
       </div>
     );
   }

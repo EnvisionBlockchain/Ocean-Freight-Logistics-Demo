@@ -33,8 +33,8 @@ class SendForExportClearance extends Component {
 
     try{
       await this.props.SupplyChainInstance.methods.ExportClearance(this.state.seller,this.state.pod, this.state.bank, this.state.cfDocsHash, this.state.cDocsHash).send({from:this.props.account});
-      this.uploadFileToAzure(this.state.cfDocs, "cfDocs", this.state.cfDocsHash);
-      this.uploadFileToAzure(this.state.cDocs, "cDocs", this.state.cDocsHash);
+      await this.uploadFileToAzure(this.state.cfDocs, "cfDocs", this.state.cfDocsHash);
+      await this.uploadFileToAzure(this.state.cDocs, "cDocs", this.state.cDocsHash);
       this.setState({msg:'Successfully uploaded!'});
     }catch(err){
       this.setState({errorMessage:err.message});
@@ -145,7 +145,7 @@ class SendForExportClearance extends Component {
                 </div>
                 }
               </Form.Field>
-              <Button loading={this.state.loading} disabled={this.tate.loading} primary basic type='submit'>Submit</Button>
+              <Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Submit</Button>
               <Message error header="Oops!" content={this.state.errorMessage} />
               {statusMessage}
             </Form>

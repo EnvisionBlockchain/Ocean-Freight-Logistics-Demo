@@ -6,6 +6,12 @@ import SendForExportClearance from "../stages/1_begin_trade";
 import ExportClearanceAction from "../stages/2_export_clearance";
 import InitiateShipment from "../stages/3_shipment_initiation";
 import BoardingShipment from "../stages/4_shipment_boarding";
+import TransferLading from "../stages/5_transfer_lading";
+import ShipmentTransit from "../stages/6_shipment_transit";
+import ImportClearance from "../stages/7_import_clearance";
+import RecoverOrder from "../stages/8_recover_order";
+import DeliveryOrder from "../stages/9_delivery_shipment";
+import ApproveDelivery from "../stages/10_approve_delivery";
 
 class Home extends Component {
     state = {
@@ -29,8 +35,12 @@ class Home extends Component {
     let instanceOriginCustoms = await SupplyChainInstance.methods.InstanceOriginCustoms().call({from:accounts[0]});
     let instanceShipper = await SupplyChainInstance.methods.InstanceShipper().call({from:accounts[0]});
     let instanceFreightCarrier = await SupplyChainInstance.methods.InstanceFreightCarrier().call({from: accounts[0]});
+    let instanceDestinationCustoms = await SupplyChainInstance.methods.InstanceDestinationCustoms().call({from:accounts[0]});
+    let instanceDestinationCustomsBroker = await SupplyChainInstance.methods.InstanceDestinationCustomsBroker().call({from:accounts[0]});
+    let instanceDrayageAgent = await SupplyChainInstance.methods.InstanceDrayageAgent().call({from:accounts[0]});
+    let instanceConsignee = await SupplyChainInstance.methods.InstanceConsignee().call({from:accounts[0]});
 
-    this.setState({loadingData:false, account:accounts[0], SupplyChainInstance, contractState, instanceShipper, instanceOriginCustoms, instanceFreightCarrier});
+    this.setState({loadingData:false, account:accounts[0], SupplyChainInstance, contractState, instanceShipper, instanceOriginCustoms, instanceFreightCarrier, instanceDestinationCustoms, instanceDestinationCustomsBroker, instanceDrayageAgent, instanceConsignee});
   }
 
   render() {
@@ -60,6 +70,37 @@ class Home extends Component {
         {this.state.instanceFreightCarrier===this.state.account && this.state.contractState==='3' &&
           <BoardingShipment account={this.state.account} SupplyChainInstance={this.state.SupplyChainInstance} />
         }
+
+        {this.state.instanceFreightCarrier===this.state.account && this.state.contractState==='4' &&
+          <TransferLading account={this.state.account} SupplyChainInstance={this.state.SupplyChainInstance} />
+        }
+
+        {this.state.instanceDestinationCustomsBroker===this.state.account && this.state.contractState==='5' &&
+          <ShipmentTransit account={this.state.account} SupplyChainInstance={this.state.SupplyChainInstance} />
+        }
+
+        {this.state.instanceDestinationCustoms===this.state.account && this.state.contractState==='6' &&
+          <ImportClearance account={this.state.account} SupplyChainInstance={this.state.SupplyChainInstance} />
+        }
+
+        {this.state.instanceDestinationCustomsBroker===this.state.account && this.state.contractState==='7' &&
+          <RecoverOrder account={this.state.account} SupplyChainInstance={this.state.SupplyChainInstance} />
+        }
+
+        {this.state.instanceDrayageAgent===this.state.account && this.state.contractState==='8' &&
+          <DeliveryOrder account={this.state.account} SupplyChainInstance={this.state.SupplyChainInstance} />
+        }
+
+        {this.state.instanceConsignee===this.state.account && this.state.contractState==='9' &&
+          <ApproveDelivery account={this.state.account} SupplyChainInstance={this.state.SupplyChainInstance} />
+        }
+
+        {this.state.contractState==='10' &&
+          <div>
+            <b>Contract State:</b> Shipment Completed<br/>
+          </div>
+        }
+
       </div>
     );
   }

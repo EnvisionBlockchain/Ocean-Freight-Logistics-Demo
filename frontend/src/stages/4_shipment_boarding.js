@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import {Loader, Dimmer, Form, Button, Input, Message, Modal} from 'semantic-ui-react';
 import SparkMD5 from 'spark-md5';
-import {azureUpload} from "../utils";
+import {azureDownload, azureUpload} from "../utils";
 const {uploadBrowserDataToAzureFile, Aborter} = require("@azure/storage-file");
 
 class BoardingShipment extends Component {
@@ -12,11 +12,25 @@ class BoardingShipment extends Component {
     boardingDocs:'',
     boardingDocsHash:'',
     boardingDocsProgress:0,
+    shippingURL:'',
+    shippingHash:'',
+    laddingURL:'',
+    laddingHash:'',
+    verifyHash:'',
+    verified:false,
   }
 
   async componentDidMount(){
     this.setState({loadingData:true});
     document.title = "Azure UI";
+    
+    const shippingHash = await this.props.SupplyChainInstance.methods.ShippingDocuments().call({from:this.props.account});
+    const laddingHash = await this.props.SupplyChainInstance.methods.DraftBillOfLadingDocument().call({from:this.props.account});
+    this.setState({shippingHash, laddingHash});
+
+    this.downloadFileFromAzure('shippingDocs', shippingHash);
+    this.downloadFileFromAzure('laddingDocs', laddingHash);
+
     this.setState({loadingData:false});
   }
 
@@ -30,6 +44,20 @@ class BoardingShipment extends Component {
       this.setState({msg:'Successfully uploaded!'});
     }catch(err){
       this.setState({errorMessage:err.message});
+    }
+
+    this.setState({loading:false});
+  }
+
+  downloadFileFromAzure = async (docType, fileName) => {
+    this.setState({loading:true});
+
+    const url = azureDownload(fileName);
+
+    if (docType === 'shippingDocs'){
+      this.setState({shippingURL:url});
+    }else{
+      this.setState({laddingURL: url});
     }
 
     this.setState({loading:false});
@@ -51,7 +79,7 @@ class BoardingShipment extends Component {
     this.setState({loading:false});
   }
 
-  captureDocs = (file) => {
+  captureDocs = (file, docType) => {
     this.setState({errorMessage:'', loading:true, msg:''});
 
     if (typeof file !== 'undefined'){
@@ -63,7 +91,11 @@ class BoardingShipment extends Component {
           var spark = new SparkMD5.ArrayBuffer();
           spark.append(buffer);
           let hash = spark.end();
-          this.setState({boardingDocsHash:hash.toString()});
+          if (docType === "verify"){
+            this.setState({verifyHash:hash, verified:true});
+          }else{
+            this.setState({boardingDocsHash:hash.toString()});
+          }
         }
       }catch(err){
         console.log("error: ",err.message);
@@ -94,8 +126,15 @@ class BoardingShipment extends Component {
       );
     }
 
+    let verifyMsg ='';
+    if (this.state.verifyHash===this.state.shippingHash || this.state.verifyHash===this.state.laddingHash){
+      verifyMsg = "File is successfully verified. Integrity check successfully passed!";
+    }else{
+      verifyMsg = "Integrity check not passed or file is different:/";
+    }
+
     let statusMessage;
-    if (this.state.msg === '' && this.state.errorMessage === ''){
+    if (this.state.msg === ''){
       statusMessage = null;
     }else{
       statusMessage = <Message floating positive header="Success!" content={this.state.msg} />;
@@ -119,7 +158,7 @@ class BoardingShipment extends Component {
             <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>
               <Form.Field>
                 <label>Final Bill Of Lading Docs</label>
-                <Input type='file' onChange={event => {this.setState({boardingDocs:event.target.files[0]}); this.captureDocs(event.target.files[0])}} />
+                <Input type='file' onChange={event => {this.setState({boardingDocs:event.target.files[0]}); this.captureDocs(event.target.files[0], "boardingDocs")}} />
                 {this.state.boardingDocsHash &&
                   <div>
                     File Hash: {this.state.boardingDocsHash} <br/>
@@ -133,6 +172,29 @@ class BoardingShipment extends Component {
             </Form>
           </Modal.Content>
         </Modal>
+        
+        <br/><br/>
+        <a href={this.state.shippingURL} download={this.state.shippingURL}><Button primary>Download Shipping Docs</Button></a>
+        <a href={this.state.laddingURL} download={this.state.laddingURL}><Button primary>Download Bill of Ladding</Button></a>
+        <br/><br />
+
+        <Modal trigger={<Button primary>Verify Document</Button>}>
+        <Modal.Header>Verify The Downloaded Documents</Modal.Header>
+        <Modal.Content>
+          <Form error={!!this.state.errorMessage}>
+            <Form.Field>
+              <label>Choose either Shipping Docs or Bill of Ladding</label>
+              <Input type='file' onChange={event => {this.captureDocs(event.target.files[0], "verify")}} />
+              {this.state.verified && verifyMsg!=='' &&
+                <div>{verifyMsg}</div>
+              }
+            </Form.Field>
+            <Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Verify</Button>
+            <Message error header="Oops!" content={this.state.errorMessage} />
+            {statusMessage}
+          </Form>
+        </Modal.Content>
+      </Modal>
       </div>
     );
   }

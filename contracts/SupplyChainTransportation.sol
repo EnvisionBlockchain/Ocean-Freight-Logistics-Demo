@@ -186,7 +186,7 @@ contract SupplyChainTransportation is WorkbenchBase('SupplyChainTransportation',
 
         State = StateType.ExportClearance;
 
-        ContractUpdated('ExportClearance');
+        ContractUpdated("ExportClearance");
     }
 
     function UploadShippingDocuments(string shippingDocuments, string draftBillOfLadingDocument) public
@@ -199,7 +199,7 @@ contract SupplyChainTransportation is WorkbenchBase('SupplyChainTransportation',
 
         State = StateType.ShipmentBoarding;
 
-        ContractUpdated('UploadShippingDocuments');
+        ContractUpdated("UploadShippingDocuments");
     }
 
     function UploadFinalBillOfLading(string finalBillOfLadingDocument) public
@@ -209,7 +209,7 @@ contract SupplyChainTransportation is WorkbenchBase('SupplyChainTransportation',
 
         FinalBillOfLadingDocument = finalBillOfLadingDocument;
         State = StateType.TransferBillOfLading;
-        ContractUpdated('UploadFinalBillOfLading');
+        ContractUpdated("UploadFinalBillOfLading");
     }
 
     function TransferBillOfLading(address destinationCustomsBroker, address destinationCustoms) public {
@@ -221,7 +221,7 @@ contract SupplyChainTransportation is WorkbenchBase('SupplyChainTransportation',
       
         State = StateType.ShipmentInTransit;
       
-        ContractUpdated('TransferBillOfLading');
+        ContractUpdated("TransferBillOfLading");
     }
 
     function SendBillOfLadingToCustoms(address drayageAgent) public {
@@ -232,7 +232,7 @@ contract SupplyChainTransportation is WorkbenchBase('SupplyChainTransportation',
         
         State = StateType.ImportClearance;
         
-        ContractUpdated('SendBillOfLadingToCustoms');
+        ContractUpdated("SendBillOfLadingToCustoms");
     }
 
     function SendReleaseOrder(string releaseOrderDocument) public
@@ -244,7 +244,7 @@ contract SupplyChainTransportation is WorkbenchBase('SupplyChainTransportation',
 
         State = StateType.RecoverShipment;
 
-        ContractUpdated('SendReleaseOrder');
+        ContractUpdated("SendReleaseOrder");
     }
 
     function SendDeliveryOrder(string deliveryOrderDocument) public
@@ -256,6 +256,6 @@ contract SupplyChainTransportation is WorkbenchBase('SupplyChainTransportation',
 
         State = StateType.ShipmentDelivery;
 
-        ContractUpdated('SendDeliveryOrder');
+        ContractUpdated("SendDeliveryOrder");
     }
 }

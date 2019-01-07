@@ -4,7 +4,7 @@
   "private": true,
   "homepage": "https://vutsalsinghal.github.io/UI-project/",
   "dependencies": {
-    "@azure/storage-blob": "^10.3.0",
+    "@azure/storage-file": "^10.0.0-preview",
     "fs-extra": "^7.0.0",
     "gh-pages": "^2.0.1",
     "react": "^16.6.0",

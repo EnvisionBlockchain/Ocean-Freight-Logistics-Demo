@@ -2,23 +2,19 @@ import React, { Component } from 'react';
 import {Loader, Dimmer, Form, Button, Input, Message, Modal} from 'semantic-ui-react';
 import SparkMD5 from 'spark-md5';
 import {azureUpload} from "../utils";
-
 const {uploadBrowserDataToAzureFile, Aborter} = require("@azure/storage-file");
 
-class SendForExportClearance extends Component {
+class InitiateShipment extends Component {
   state = {
     msg:'',
     errorMessage:'',
     loadingData:false,
-    seller:'',
-    bank:'',
-    pod:'',
-    cfDocs:'',
-    cDocs:'',
-    cfDocsHash:'',
-    cDocsHash:'',
-    cfDocsProgress:0,
-    cDocsProgress:0
+    shippingDocs:'',
+    ladingDocs:'',
+    shippingDocsHash:'',
+    ladingDocsHash:'',
+    shippingDocsProgress:0,
+    ladingDocsProgress:0,
   }
 
   async componentDidMount(){
@@ -32,9 +28,10 @@ class SendForExportClearance extends Component {
     this.setState({errorMessage:'', loading:true, msg:''});
 
     try{
-      await this.props.SupplyChainInstance.methods.ExportClearance(this.state.seller,this.state.pod, this.state.bank, this.state.cfDocsHash, this.state.cDocsHash).send({from:this.props.account});
-      this.uploadFileToAzure(this.state.cfDocs, "cfDocs", this.state.cfDocsHash);
-      this.uploadFileToAzure(this.state.cDocs, "cDocs", this.state.cDocsHash);
+      await this.props.SupplyChainInstance.methods.UploadShippingDocuments(this.state.shippingDocsHash, this.state.ladingDocsHash).send({from:this.props.account});
+      await this.uploadFileToAzure(this.state.shippingDocs, 'shippingDocs', this.state.shippingDocsHash);
+      await this.uploadFileToAzure(this.state.shippingDocs, 'ladingDocs', this.state.shippingDocsHash);
+      
       this.setState({msg:'Successfully uploaded!'});
     }catch(err){
       this.setState({errorMessage:err.message});
@@ -52,17 +49,17 @@ class SendForExportClearance extends Component {
       parallelism: 20, // 20 concurrency
       progress: ev => {
         let prgs = Math.round(ev.loadedBytes * 10000/file.size)/100;
-        if (docType === 'cfDocs'){
-          this.setState({cfDocsProgress: prgs});
+        if (docType === 'shippingDocs'){
+          this.setState({shippingDocsProgress: prgs});
         }else{
-          this.setState({cDocsProgress: prgs});
+          this.setState({ladingDocsProgress: prgs});
         }
       }
     });
 
     this.setState({loading:false});
   }
-  
+
   captureDocs = (file, docType) => {
     this.setState({errorMessage:'', loading:true, msg:''});
 
@@ -75,10 +72,10 @@ class SendForExportClearance extends Component {
           var spark = new SparkMD5.ArrayBuffer();
           spark.append(buffer);
           let hash = spark.end();
-          if (docType === 'cfDocs'){
-            this.setState({cfDocsHash:hash.toString()});
+          if (docType === 'shippingDocs'){
+            this.setState({shippingDocsHash: hash.toString()});
           }else{
-            this.setState({cDocsHash:hash.toString()});
+            this.setState({ladingDocsHash: hash.toString()});
           }
         }
       }catch(err){
@@ -100,7 +97,7 @@ class SendForExportClearance extends Component {
     }
 
     let statusMessage;
-    if (this.state.msg === '' && this.state.errorMessage === ''){
+    if (this.state.msg === ''){
       statusMessage = null;
     }else{
       statusMessage = <Message floating positive header="Success!" content={this.state.msg} />;
@@ -108,44 +105,32 @@ class SendForExportClearance extends Component {
 
     return (
       <div>
-      <b>Contract State:</b> Begin Trade<br/>
-        <Modal trigger={<Button primary>Export Clearance</Button>}>
-          <Modal.Header>Upload Export Clearance Docs</Modal.Header>
+      <b>Contract State:</b> Shipment Initiation<br/>
+        <Modal trigger={<Button primary>Upload Docs</Button>}>
+          <Modal.Header>Upload Shipping Docs</Modal.Header>
           <Modal.Content>
             <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>
               <Form.Field>
-                <label>Seller</label>
-                <Input onChange={event => this.setState({seller:event.target.value})} placeholder='<string>' />
-              </Form.Field>
-              <Form.Field>
-                <label>Port Of Discharge</label>
-                <Input onChange={event => this.setState({pod:event.target.value})} />
-              </Form.Field>
-              <Form.Field>
-                <label>Origin Bank</label>
-                <Input onChange={event => this.setState({bank:event.target.value})} />
-              </Form.Field>
-              <Form.Field>
-                <label>Customs Filing Docs</label>
-                <Input type='file' onChange={event => {this.setState({cfDocs:event.target.files[0]}); this.captureDocs(event.target.files[0], 'cfDocs')}} />
-                {this.state.cfDocsHash &&
+                <label>Shipping Docs</label>
+                <Input type='file' onChange={event => {this.setState({shippingDocs:event.target.files[0]}); this.captureDocs(event.target.files[0], "shippingDocs")}} />
+                {this.state.shippingDocsHash &&
                   <div>
-                    File Hash: {this.state.cfDocsHash} <br/>
-                    Upload Progress: {this.state.cfDocsProgress}%  
+                    File Hash: {this.state.shippingDocsHash} <br/>
+                    Upload Progress: {this.state.shippingDocsProgress}%  
                   </div>
                 }
               </Form.Field>
               <Form.Field>
-                <label>Customs Docs</label>
-                <Input type='file' onChange={event => {this.setState({cDocs:event.target.files[0]}); this.captureDocs(event.target.files[0], 'cDocs')}} />
-                {this.state.cDocsHash &&
+                <label>Draft Bill of Lading</label>
+                <Input type='file' onChange={event => {this.setState({ladingDocs:event.target.files[0]}); this.captureDocs(event.target.files[0], "ladingDocs")}} />
+                {this.state.ladingDocsHash &&
                   <div>
-                    File Hash: {this.state.cDocsHash} <br/>
-                    Upload Progress: {this.state.cDocsProgress}%  
-                </div>
+                    File Hash: {this.state.ladingDocsHash} <br/>
+                    Upload Progress: {this.state.ladingDocsProgress}%  
+                  </div>
                 }
               </Form.Field>
-              <Button loading={this.state.loading} disabled={this.tate.loading} primary basic type='submit'>Submit</Button>
+              <Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Submit</Button>
               <Message error header="Oops!" content={this.state.errorMessage} />
               {statusMessage}
             </Form>
@@ -156,4 +141,4 @@ class SendForExportClearance extends Component {
   }
 }
 
-export default SendForExportClearance;
+export default InitiateShipment;

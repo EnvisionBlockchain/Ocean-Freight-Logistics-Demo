@@ -21,7 +21,7 @@ contract WorkbenchBase {
     }
 }
 
-contract SupplyChainTransportation is WorkbenchBase('SupplyChainTransportation', 'SupplyChainTransportation')
+contract SupplyChainTransportation is WorkbenchBase("SupplyChainTransportation", "SupplyChainTransportation")
 {
     enum StateType { BeginTrade, ExportClearance, ShipmentInitiation, ShipmentBoarding, TransferBillOfLading, ShipmentInTransit, ImportClearance, RecoverShipment, ShipmentDelivery, ShipmentFinalize, ShipmentComplete, Terminated }
     address public InstanceShipper;
@@ -172,8 +172,7 @@ contract SupplyChainTransportation is WorkbenchBase('SupplyChainTransportation',
         ContractUpdated('AmendImportDocuments');
     }
 
-    function ExportClearance (string seller, string portOfDischarge, string originBank, 
-        string exportDocument, string customsDocument) public 
+    function ExportClearance (string seller, string portOfDischarge, string originBank, string exportDocument, string customsDocument) public 
     {
         require(State == StateType.BeginTrade);
         require(msg.sender == InstanceShipper);

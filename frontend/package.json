@@ -13,6 +13,7 @@
     "react-scripts": "2.1.1",
     "semantic-ui-css": "^2.4.1",
     "semantic-ui-react": "^0.83.0",
+    "serve": "^10.1.1",
     "solc": "^0.4.25",
     "spark-md5": "^3.0.0",
     "truffle-hdwallet-provider": "0.0.6",
@@ -24,7 +25,8 @@
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "serve": "serve -s build"
   },
   "eslintConfig": {
     "extends": "react-app"

@@ -1,17 +1,7 @@
 import React, { Component } from 'react';
 import {Loader, Dimmer, Button, Message, Modal, Form, Input} from 'semantic-ui-react';
+import {azureDownload} from "../utils";
 import SparkMD5 from 'spark-md5';
-import config from "../config";
-
-const {
-  AnonymousCredential,
-  Aborter,
-  FileURL,
-  DirectoryURL,
-  ShareURL,
-  ServiceURL,
-  StorageURL
-} = require("@azure/storage-file");
 
 class ExportClearanceAction extends Component {
   state = {
@@ -31,8 +21,8 @@ class ExportClearanceAction extends Component {
     const cfDocsHash = await this.props.SupplyChainInstance.methods.ExportDocument().call({from:this.props.account});
     const cDocsHash = await this.props.SupplyChainInstance.methods.CustomsDocument().call({from:this.props.account});
     this.setState({cfDocsHash, cDocsHash});
-    this.downloadFileFromAzure('cfDocs');
-    this.downloadFileFromAzure('cDocs');
+    this.downloadFileFromAzure('cfDocs', cfDocsHash);
+    this.downloadFileFromAzure('cDocs', cDocsHash);
 
     this.setState({loadingData:false});
   }
@@ -44,13 +34,14 @@ class ExportClearanceAction extends Component {
       try{
         let reader = new window.FileReader()
         reader.readAsArrayBuffer(file)
-        reader.onloadend = async () => {
+        reader.onloadend = () => {          
           const buffer = Buffer.from(reader.result);
           var spark = new SparkMD5.ArrayBuffer();
           spark.append(buffer);
           let hash = spark.end();
           this.setState({verifyHash:hash.toString(), verified:true});
         }
+
       }catch(err){
         console.log("error: ",err.message);
       }
@@ -60,32 +51,10 @@ class ExportClearanceAction extends Component {
     this.setState({loading:false});
   }
 
-  downloadFileFromAzure = async (docType) => {
+  downloadFileFromAzure = async (docType, fileName) => {
     this.setState({loading:true});
 
-    const account = "uploadcustomsfiles";
-    const accountSas = config.accountSAS;
-
-    const pipeline = StorageURL.newPipeline(new AnonymousCredential(), {
-      retryOptions: { maxTries: 4 }, // Retry options
-      telemetry: { value: "HighLevelSample V1.0.0" } // Customized telemetry string
-    });
-  
-    const serviceURL = new ServiceURL(`https://${account}.file.core.windows.net${accountSas}`,pipeline);
-    const shareName = "uploadfileshare";
-    const shareURL = ShareURL.fromServiceURL(serviceURL, shareName);
-    
-    const directoryName = "uploadfiledir";
-    const directoryURL = DirectoryURL.fromShareURL(shareURL, directoryName);
-
-    let fileName;
-    if (docType === 'cfDocs'){
-      fileName = this.state.cfDocsHash;
-    }else{
-      fileName = this.state.cDocsHash;
-    }
-    const fileURL = FileURL.fromDirectoryURL(directoryURL, fileName);
-    const url = fileURL.storageClientContext.url;
+    const url = azureDownload(fileName);
 
     if (docType === 'cfDocs'){
       this.setState({cfURL:url});
@@ -111,7 +80,7 @@ class ExportClearanceAction extends Component {
     this.setState({msg:'',loading:true, errorMessage:''});
     try{
       await this.props.SupplyChainInstance.methods.AmendExportDocumentation().send({from:this.props.account});
-      this.setState({msg:'Documents Amed Requested!'});
+      this.setState({msg:'Documents Amend Requested!'});
     }catch(err){
       this.setState({errorMessage:err.messsage});
     }
@@ -193,7 +162,7 @@ class ExportClearanceAction extends Component {
         <Modal trigger={<Button primary>Verify Document</Button>}>
           <Modal.Header>Verify The Downloaded Documents</Modal.Header>
           <Modal.Content>
-            <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>
+            <Form error={!!this.state.errorMessage}>
               <Form.Field>
                 <label>Choose either Customs or Exports Document</label>
                 <Input type='file' onChange={event => {this.captureDocs(event.target.files[0])}} />
@@ -201,7 +170,7 @@ class ExportClearanceAction extends Component {
                   <div>{verifyMsg}</div>
                 }
               </Form.Field>
-              <Button loading={this.state.loading} primary basic type='submit'>Verify</Button>
+              <Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Verify</Button>
               <Message error header="Oops!" content={this.state.errorMessage} />
               {statusMessage}
             </Form>

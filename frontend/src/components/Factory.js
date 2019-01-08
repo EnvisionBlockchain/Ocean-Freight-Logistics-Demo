@@ -55,8 +55,7 @@ class Factory extends Component {
 
     try {
       let { description, freightCarrierAddress, originCustomsAddress, consigneeAddress, account } = this.state;
-      let deployedAddress = await FactoryInstance.methods.createSupplyChain(description, freightCarrierAddress, originCustomsAddress, consigneeAddress).send({ from: account });
-      console.log(deployedAddress);
+      await FactoryInstance.methods.createSupplyChain(description, freightCarrierAddress, originCustomsAddress, consigneeAddress).send({ from: account });
       this.setState({ msg: 'Contract deployed successfully!' });
     } catch (err) {
       this.setState({ errorMessage: err.message });
@@ -111,7 +110,7 @@ class Factory extends Component {
                       <label>Consignee Address</label>
                       <Input onChange={event => this.setState({ consigneeAddress: event.target.value })} />
                     </Form.Field>
-                    <Button loading={this.state.loading} primary basic type='submit'>Deploy</Button>
+                    <Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Deploy</Button>
                     <Message error header="Oops!" content={this.state.errorMessage} />
                     {statusMessage}
                   </Form>

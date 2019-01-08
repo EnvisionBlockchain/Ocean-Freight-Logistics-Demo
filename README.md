@@ -2,4 +2,4 @@
 
 ## Demo
 
-[vutsalsinghal.github.io/UI-project](https://vutsalsinghal.github.io/UI-project)
+[uploadcustomsfiles.z13.web.core.windows.net/UI-project](https://uploadcustomsfiles.z13.web.core.windows.net/UI-project/)

@@ -1,12 +1,12 @@
 # dependencies
 /node_modules
+/frontend/node_modules
 frontend/node_modules
 
 # testing
 /coverage
 
 # production
-/build
 
 # misc
 .DS_Store
@@ -14,7 +14,11 @@ frontend/node_modules
 .env.development.local
 .env.test.local
 .env.production.local
+.vscode/
 
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+frontend/build/
+frontend/src/config.js

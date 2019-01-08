@@ -7,26 +7,34 @@ contract WorkbenchBase {
     string internal ApplicationName;
     string internal WorkflowName;
 
-    function WorkbenchBase(string applicationName, string workflowName) internal {
+    constructor(string applicationName, string workflowName) internal {
         ApplicationName = applicationName;
         WorkflowName = workflowName;
     }
 
     function ContractCreated() internal {
-        WorkbenchContractCreated(ApplicationName, WorkflowName, msg.sender);
+        emit WorkbenchContractCreated(ApplicationName, WorkflowName, msg.sender);
     }
 
     function ContractUpdated(string action) internal {
-        WorkbenchContractUpdated(ApplicationName, WorkflowName, action, msg.sender);
+        emit WorkbenchContractUpdated(ApplicationName, WorkflowName, action, msg.sender);
     }
 }
 
-contract SupplyChainTransportation is WorkbenchBase('SupplyChainTransportation', 'SupplyChainTransportation')
+contract SupplyChainTransportation is WorkbenchBase("SupplyChainTransportation", "SupplyChainTransportation")
 {
     enum StateType { BeginTrade, ExportClearance, ShipmentInitiation, ShipmentBoarding, TransferBillOfLading, ShipmentInTransit, ImportClearance, RecoverShipment, ShipmentDelivery, ShipmentFinalize, ShipmentComplete, Terminated }
     address public InstanceShipper;
     string public Description;
     StateType public State;
+
+    struct Doc{
+        string name;
+        string size;
+        string docID;
+    }
+
+    mapping(string => Doc) document;
 
     address public InstanceFreightCarrier;
     address public InstanceOriginCustoms;
@@ -46,13 +54,13 @@ contract SupplyChainTransportation is WorkbenchBase('SupplyChainTransportation',
     string public ReleaseOrderDocument;
     string public DeliveryOrderDocument;
 
-    constructor(string description, address freightCarrier, address originCustoms, address consignee) public{
-        InstanceShipper = msg.sender;
+    constructor(address creator, string description, address freightCarrier, address originCustoms, address consignee) public{
+        InstanceShipper = creator;
         Description = description;
         State = StateType.BeginTrade;
         InstanceFreightCarrier = freightCarrier;
         InstanceOriginCustoms = originCustoms;
-        InstanceConsignee = consignee;
+        InstanceConsignee = consignee;        
         ContractCreated();
     }
 
@@ -164,8 +172,7 @@ contract SupplyChainTransportation is WorkbenchBase('SupplyChainTransportation',
         ContractUpdated('AmendImportDocuments');
     }
 
-    function ExportClearance (string seller, string portOfDischarge, string originBank, 
-        string exportDocument, string customsDocument) public 
+    function ExportClearance (string seller, string portOfDischarge, string originBank, string exportDocument, string customsDocument) public 
     {
         require(State == StateType.BeginTrade);
         require(msg.sender == InstanceShipper);
@@ -178,7 +185,7 @@ contract SupplyChainTransportation is WorkbenchBase('SupplyChainTransportation',
 
         State = StateType.ExportClearance;
 
-        ContractUpdated('ExportClearance');
+        ContractUpdated("ExportClearance");
     }
 
     function UploadShippingDocuments(string shippingDocuments, string draftBillOfLadingDocument) public
@@ -191,7 +198,7 @@ contract SupplyChainTransportation is WorkbenchBase('SupplyChainTransportation',
 
         State = StateType.ShipmentBoarding;
 
-        ContractUpdated('UploadShippingDocuments');
+        ContractUpdated("UploadShippingDocuments");
     }
 
     function UploadFinalBillOfLading(string finalBillOfLadingDocument) public
@@ -201,7 +208,7 @@ contract SupplyChainTransportation is WorkbenchBase('SupplyChainTransportation',
 
         FinalBillOfLadingDocument = finalBillOfLadingDocument;
         State = StateType.TransferBillOfLading;
-        ContractUpdated('UploadFinalBillOfLading');
+        ContractUpdated("UploadFinalBillOfLading");
     }
 
     function TransferBillOfLading(address destinationCustomsBroker, address destinationCustoms) public {
@@ -213,7 +220,7 @@ contract SupplyChainTransportation is WorkbenchBase('SupplyChainTransportation',
       
         State = StateType.ShipmentInTransit;
       
-        ContractUpdated('TransferBillOfLading');
+        ContractUpdated("TransferBillOfLading");
     }
 
     function SendBillOfLadingToCustoms(address drayageAgent) public {
@@ -224,7 +231,7 @@ contract SupplyChainTransportation is WorkbenchBase('SupplyChainTransportation',
         
         State = StateType.ImportClearance;
         
-        ContractUpdated('SendBillOfLadingToCustoms');
+        ContractUpdated("SendBillOfLadingToCustoms");
     }
 
     function SendReleaseOrder(string releaseOrderDocument) public
@@ -236,7 +243,7 @@ contract SupplyChainTransportation is WorkbenchBase('SupplyChainTransportation',
 
         State = StateType.RecoverShipment;
 
-        ContractUpdated('SendReleaseOrder');
+        ContractUpdated("SendReleaseOrder");
     }
 
     function SendDeliveryOrder(string deliveryOrderDocument) public
@@ -248,6 +255,6 @@ contract SupplyChainTransportation is WorkbenchBase('SupplyChainTransportation',
 
         State = StateType.ShipmentDelivery;
 
-        ContractUpdated('SendDeliveryOrder');
+        ContractUpdated("SendDeliveryOrder");
     }
 }

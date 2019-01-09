@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
-import { Loader, Dimmer, Form, Input, Message, Button, Card, Modal, Grid, Icon } from 'semantic-ui-react';
+import { Loader, Dimmer, Form, Input, Message, Button, Card, Modal, Grid, Icon, Progress } from 'semantic-ui-react';
 import web3 from '../ethereum/web3';
 import { FactoryInstance } from '../ethereum/factoryInstance';
 import { SupplyChainInstance as supplychain_instance } from '../ethereum/contractInstance';
+import { stateLabel } from "../utils";
 
 class Factory extends Component {
   state = {
@@ -28,25 +29,29 @@ class Factory extends Component {
     for (var i = 0; i < deployedChains.length; i++) {
       const SupplyChainInstance = await supplychain_instance(deployedChains[i]);
       let contractDesc = await SupplyChainInstance.methods.Description().call({ from: accounts[0] });
-      arr.push([deployedChains[i], contractDesc]);
+      let contractState = await SupplyChainInstance.methods.State().call({ from: accounts[0] });
+      arr.push([deployedChains[i], contractDesc, contractState]);
     }
 
     this.setState({ loadingData: false, account: accounts[0], deployedChains: arr });
   }
 
-  renderChains() {
-    const items = this.state.deployedChains.map(chainDets => {
-      return {
-        href: '/UI-project/' + chainDets[0],
-        header: "Address: " + chainDets[0],
-        description: 'Description: ' + chainDets[1],
-        meta: "Click for Details",
-        fluid: true,
-        style: { overflowWrap: 'break-word' },
-      };
+  renderChains = () => {
+    let items = this.state.deployedChains.map((chainDets, id) => {
+      return (
+        <Card key={id} fluid href={'/UI-project/' + chainDets[0]} style={{ overflowWrap: 'break-word' }}>
+          <Card.Content>
+            <Card.Header>Address: {chainDets[0]}</Card.Header>
+            <Card.Meta>Click For Details</Card.Meta>
+            <Card.Description>Description: {chainDets[1]}</Card.Description>
+            <Card.Description>Stage: {parseInt(chainDets[2], 10) + 1}/11 (<span style={{ "color": "red" }}>{stateLabel[chainDets[2]]}</span>)</Card.Description><br />
+            <Progress value={chainDets[2]} total='10' indicating />
+          </Card.Content>
+        </Card>
+      );
     });
 
-    return <Card.Group items={items} />;
+    return <Card.Group>{items}</Card.Group>;
   }
 
   onSubmit = async (event) => {
@@ -83,14 +88,14 @@ class Factory extends Component {
     return (
       <div>
         <h1>Deployed Supplychain Transportation Contracts</h1>
-        <Grid stackable>
+        <Grid stackable reversed='mobile'>
           <Grid.Column width={12}>
             {this.state.deployedChains.length > 0 && this.renderChains()}
             {this.state.deployedChains.length === 0 && <p>No contracts deployed!</p>}
           </Grid.Column>
           <Grid.Column width={4}>
             <Grid.Row>
-              <Modal trigger={<Button primary icon labelPosition='right'><Icon name='plus circle' />Create New Contract</Button>}>
+              <Modal trigger={<Button primary icon labelPosition='right'><Icon name='plus circle' />Deploy New Supplychain</Button>}>
                 <Modal.Header>Supplychain Transportation Factory</Modal.Header>
                 <Modal.Content>
                   <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>

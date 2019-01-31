@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
-import { Loader, Dimmer, Form, Input, Message, Button, Card, Modal, Grid, Icon } from 'semantic-ui-react';
+import { Loader, Dimmer, Form, Input, Message, Button, Card, Modal, Grid, Icon, Progress } from 'semantic-ui-react';
 import web3 from '../ethereum/web3';
 import { FactoryInstance } from '../ethereum/factoryInstance';
 import { SupplyChainInstance as supplychain_instance } from '../ethereum/contractInstance';
+import { stateLabel } from "../utils";
 
 class Factory extends Component {
   state = {
@@ -14,7 +15,10 @@ class Factory extends Component {
     freightCarrierAddress: '',
     originCustomsAddress: '',
     consigneeAddress: '',
+    deployedChainsAddr: [],
     deployedChains: [],
+    currentPage: 1,
+    chainsPerPage: 3,
   }
 
   async componentDidMount() {
@@ -22,31 +26,108 @@ class Factory extends Component {
     document.title = "Azure UI";
 
     const accounts = await web3.eth.getAccounts();
-    let deployedChains = await FactoryInstance.methods.getDeployedSupplyChain().call({ from: accounts[0] });
+    let deployedChainsAddr = await FactoryInstance.methods.getDeployedSupplyChain().call({ from: accounts[0] });
 
-    let arr = [];
-    for (var i = 0; i < deployedChains.length; i++) {
-      const SupplyChainInstance = await supplychain_instance(deployedChains[i]);
-      let contractDesc = await SupplyChainInstance.methods.Description().call({ from: accounts[0] });
-      arr.push([deployedChains[i], contractDesc]);
+
+    let last = this.state.chainsPerPage;
+    if (deployedChainsAddr.length < last) {
+      last = deployedChainsAddr.length;
     }
 
-    this.setState({ loadingData: false, account: accounts[0], deployedChains: arr });
+    let deployedChains = [];
+    for (var i = 0; i < last; i++) {
+      try {
+        const SupplyChainInstance = await supplychain_instance(deployedChainsAddr[i]);
+        const InstanceShipper = await SupplyChainInstance.methods.InstanceShipper().call({ from: accounts[0] });
+        let metaData = await SupplyChainInstance.methods.getMetaData().call({ from: accounts[0] });
+        console.log(metaData);
+        deployedChains.push([deployedChainsAddr[i], metaData, InstanceShipper]);
+      } catch (e) {
+
+      }
+    }
+
+    this.setState({ loadingData: false, account: accounts[0], deployedChainsAddr, deployedChains });
   }
 
-  renderChains() {
-    const items = this.state.deployedChains.map(chainDets => {
-      return {
-        href: '/UI-project/' + chainDets[0],
-        header: "Address: " + chainDets[0],
-        description: 'Description: ' + chainDets[1],
-        meta: "Click for Details",
-        fluid: true,
-        style: { overflowWrap: 'break-word' },
-      };
+  handleClick = (event) => {
+    const currentPage = Number(event.target.id);
+    const indexOfLastChain = currentPage * this.state.chainsPerPage;
+    const indexOfFirstChain = indexOfLastChain - this.state.chainsPerPage;
+
+    this.getChains(indexOfFirstChain, indexOfLastChain);
+    this.setState({ currentPage });
+  }
+
+  getChains = async (first, last) => {
+    this.setState({ loadingData: true });
+    const { account, deployedChainsAddr } = this.state;
+
+    if (last > this.state.deployedChainsAddr.length) {
+      last = this.state.deployedChainsAddr.length;
+    }
+
+    let deployedChains = [];
+    for (var i = first; i < last; i++) {
+      try {
+        const SupplyChainInstance = await supplychain_instance(deployedChainsAddr[i]);
+        const InstanceShipper = await SupplyChainInstance.methods.InstanceShipper().call({ from: account });
+        let metaData = await SupplyChainInstance.methods.getMetaData().call({ from: account });
+        deployedChains.push([deployedChainsAddr[i], metaData, InstanceShipper]);
+      } catch (e) {
+
+      }
+    }
+
+    this.setState({ deployedChains, loadingData: false });
+  }
+
+  renderChains = () => {
+    let items = this.state.deployedChains.map((chainDets, id) => {
+
+      var seconds = parseInt(chainDets[1].timeSinceLastAction, 10);
+      var days = Math.floor(seconds / (3600 * 24));
+      seconds -= days * 3600 * 24;
+      var hrs = Math.floor(seconds / 3600);
+      seconds -= hrs * 3600;
+      var mnts = Math.floor(seconds / 60);
+      seconds -= mnts * 60;
+
+      return (
+        <Card key={id} fluid style={{ overflowWrap: 'break-word' }}>
+          <Card.Content>
+            <Card.Header>Address: {chainDets[0]}</Card.Header>
+            <Card.Meta>Time since last action: <b>{days} days {hrs} hrs {mnts} min {seconds} sec</b></Card.Meta>
+            <Card.Description>Description: {chainDets[1]._Description}</Card.Description>
+            {(chainDets[1]._State !== '11' &&
+              <div>
+                <Card.Description>Stage: {parseInt(chainDets[1]._State, 10) + 1}/11 (<span style={{ "color": "red" }}>{stateLabel[chainDets[1]._State]}</span>)</Card.Description><br />
+                <Progress value={chainDets[1]._State} total='10' indicating />
+                <Button href={'/UI-project/' + chainDets[0]} primary icon labelPosition="right" floated="right"><Icon name='right arrow' />Details</Button>
+              </div>) ||
+              <div>Stage: <span style={{ "color": "red" }}>Terminated</span></div>
+            }
+
+            {this.state.account === chainDets[2] &&
+              <Button loading={this.state.loading} disabled={this.state.loading} basic color='red' icon labelPosition="left" floated='right' onClick={() => this.deleteContract(chainDets[0])}><Icon name="warning sign" />Delete</Button>
+            }
+          </Card.Content>
+        </Card>
+      );
     });
 
-    return <Card.Group items={items} />;
+    return <Card.Group>{items}</Card.Group>;
+  }
+
+  deleteContract = async (address) => {
+    this.setState({ loading: true });
+    try {
+      const SupplyChainInstance = await supplychain_instance(address);
+      await SupplyChainInstance.methods.kill().send({ from: this.state.account });
+    } catch (e) {
+      this.setState({ errorMessage: e.message });
+    }
+    this.setState({ loading: false });
   }
 
   onSubmit = async (event) => {
@@ -80,44 +161,61 @@ class Factory extends Component {
       statusMessage = <Message floating positive header="Success!" content={this.state.msg} />;
     }
 
+    const pageNumbers = [];
+    for (let i = 1; i <= Math.ceil(this.state.deployedChainsAddr.length / this.state.chainsPerPage); i++) {
+      pageNumbers.push(i);
+    }
+
+    const renderPageNumbers = pageNumbers.map(number => {
+      return (
+        <Button key={number} id={number} onClick={this.handleClick}>{number}</Button>
+      );
+    });
+
     return (
       <div>
         <h1>Deployed Supplychain Transportation Contracts</h1>
-        <Grid stackable>
-          <Grid.Column width={12}>
-            {this.state.deployedChains.length > 0 && this.renderChains()}
-            {this.state.deployedChains.length === 0 && <p>No contracts deployed!</p>}
-          </Grid.Column>
-          <Grid.Column width={4}>
-            <Grid.Row>
-              <Modal trigger={<Button primary icon labelPosition='right'><Icon name='plus circle' />Create New Contract</Button>}>
-                <Modal.Header>Supplychain Transportation Factory</Modal.Header>
-                <Modal.Content>
-                  <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>
-                    <Form.Field>
-                      <label>Description</label>
-                      <Input onChange={event => this.setState({ description: event.target.value })} />
-                    </Form.Field>
-                    <Form.Field>
-                      <label>Freight Carrier Address</label>
-                      <Input onChange={event => this.setState({ freightCarrierAddress: event.target.value })} />
-                    </Form.Field>
-                    <Form.Field>
-                      <label>Oigin Customs Address</label>
-                      <Input onChange={event => this.setState({ originCustomsAddress: event.target.value })} />
-                    </Form.Field>
-                    <Form.Field>
-                      <label>Consignee Address</label>
-                      <Input onChange={event => this.setState({ consigneeAddress: event.target.value })} />
-                    </Form.Field>
-                    <Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Deploy</Button>
-                    <Message error header="Oops!" content={this.state.errorMessage} />
-                    {statusMessage}
-                  </Form>
-                </Modal.Content>
-              </Modal>
-            </Grid.Row>
-          </Grid.Column>
+        <Grid stackable reversed='mobile'>
+          <Grid.Row>
+            <Grid.Column width={12}>
+              {(this.state.deployedChainsAddr.length > 0 && this.renderChains()) || <b>No contracts deployed!</b>}
+            </Grid.Column>
+            <Grid.Column width={4}>
+              <Grid.Row>
+                <Modal trigger={<Button primary icon labelPosition='right'><Icon name='plus circle' />Deploy New Supplychain</Button>}>
+                  <Modal.Header>Supplychain Transportation Factory</Modal.Header>
+                  <Modal.Content>
+                    <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>
+                      <Form.Field>
+                        <label>Description</label>
+                        <Input onChange={event => this.setState({ description: event.target.value })} />
+                      </Form.Field>
+                      <Form.Field>
+                        <label>Freight Carrier Address</label>
+                        <Input onChange={event => this.setState({ freightCarrierAddress: event.target.value })} />
+                      </Form.Field>
+                      <Form.Field>
+                        <label>Oigin Customs Address</label>
+                        <Input onChange={event => this.setState({ originCustomsAddress: event.target.value })} />
+                      </Form.Field>
+                      <Form.Field>
+                        <label>Consignee Address</label>
+                        <Input onChange={event => this.setState({ consigneeAddress: event.target.value })} />
+                      </Form.Field>
+                      <Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Deploy</Button>
+                      <Message error header="Oops!" content={this.state.errorMessage} />
+                      {statusMessage}
+                    </Form>
+                  </Modal.Content>
+                </Modal>
+              </Grid.Row>
+            </Grid.Column>
+          </Grid.Row>
+          <Grid.Row centered>
+            <Button.Group>
+              {renderPageNumbers}
+            </Button.Group>
+          </Grid.Row>
         </Grid>
       </div>
     );

@@ -24,17 +24,11 @@ contract WorkbenchBase {
 contract SupplyChainTransportation is WorkbenchBase("SupplyChainTransportation", "SupplyChainTransportation")
 {
     enum StateType { BeginTrade, ExportClearance, ShipmentInitiation, ShipmentBoarding, TransferBillOfLading, ShipmentInTransit, ImportClearance, RecoverShipment, ShipmentDelivery, ShipmentFinalize, ShipmentComplete, Terminated }
+    uint[] lastAction;
+    bool public Killed;
     address public InstanceShipper;
     string public Description;
     StateType public State;
-
-    struct Doc{
-        string name;
-        string size;
-        string docID;
-    }
-
-    mapping(string => Doc) document;
 
     address public InstanceFreightCarrier;
     address public InstanceOriginCustoms;
@@ -60,7 +54,8 @@ contract SupplyChainTransportation is WorkbenchBase("SupplyChainTransportation",
         State = StateType.BeginTrade;
         InstanceFreightCarrier = freightCarrier;
         InstanceOriginCustoms = originCustoms;
-        InstanceConsignee = consignee;        
+        InstanceConsignee = consignee;
+        lastAction.push(now);
         ContractCreated();
     }
 
@@ -78,6 +73,7 @@ contract SupplyChainTransportation is WorkbenchBase("SupplyChainTransportation",
             require(msg.sender == InstanceConsignee);
         }
         State = StateType.Terminated;
+        lastAction.push(now);
         ContractUpdated('Terminate');
     }
 
@@ -88,6 +84,7 @@ contract SupplyChainTransportation is WorkbenchBase("SupplyChainTransportation",
         {
             require(msg.sender == InstanceOriginCustoms);
             State = StateType.ShipmentInitiation;
+            lastAction.push(now);
         }
         else
         {
@@ -103,6 +100,7 @@ contract SupplyChainTransportation is WorkbenchBase("SupplyChainTransportation",
         {
             require(msg.sender == InstanceDrayageAgent);
             State = StateType.ShipmentFinalize;
+            lastAction.push(now);
         }
         else
         {
@@ -118,6 +116,7 @@ contract SupplyChainTransportation is WorkbenchBase("SupplyChainTransportation",
         {
             require(msg.sender == InstanceConsignee);
             State = StateType.ShipmentComplete;
+            lastAction.push(now);
         }
         else
         {
@@ -133,6 +132,7 @@ contract SupplyChainTransportation is WorkbenchBase("SupplyChainTransportation",
         {
             require(msg.sender == InstanceOriginCustoms);
             State = StateType.BeginTrade;
+            lastAction.push(now);
         }
         else
         {
@@ -148,6 +148,7 @@ contract SupplyChainTransportation is WorkbenchBase("SupplyChainTransportation",
         {
             require(msg.sender == InstanceFreightCarrier);
             State = StateType.ShipmentInitiation;
+            lastAction.push(now);
         }
         else
         {
@@ -163,6 +164,7 @@ contract SupplyChainTransportation is WorkbenchBase("SupplyChainTransportation",
         {
             require(msg.sender == InstanceDestinationCustoms);
             State = StateType.ShipmentInTransit;
+            lastAction.push(now);
         }
         else
         {
@@ -184,7 +186,7 @@ contract SupplyChainTransportation is WorkbenchBase("SupplyChainTransportation",
         CustomsDocument = customsDocument;
 
         State = StateType.ExportClearance;
-
+        lastAction.push(now);
         ContractUpdated("ExportClearance");
     }
 
@@ -197,7 +199,7 @@ contract SupplyChainTransportation is WorkbenchBase("SupplyChainTransportation",
         DraftBillOfLadingDocument = draftBillOfLadingDocument;
 
         State = StateType.ShipmentBoarding;
-
+        lastAction.push(now);
         ContractUpdated("UploadShippingDocuments");
     }
 
@@ -208,6 +210,7 @@ contract SupplyChainTransportation is WorkbenchBase("SupplyChainTransportation",
 
         FinalBillOfLadingDocument = finalBillOfLadingDocument;
         State = StateType.TransferBillOfLading;
+        lastAction.push(now);
         ContractUpdated("UploadFinalBillOfLading");
     }
 
@@ -219,7 +222,7 @@ contract SupplyChainTransportation is WorkbenchBase("SupplyChainTransportation",
         InstanceDestinationCustoms = destinationCustoms;
       
         State = StateType.ShipmentInTransit;
-      
+        lastAction.push(now);
         ContractUpdated("TransferBillOfLading");
     }
 
@@ -230,7 +233,7 @@ contract SupplyChainTransportation is WorkbenchBase("SupplyChainTransportation",
         InstanceDrayageAgent = drayageAgent;
         
         State = StateType.ImportClearance;
-        
+        lastAction.push(now);
         ContractUpdated("SendBillOfLadingToCustoms");
     }
 
@@ -242,7 +245,7 @@ contract SupplyChainTransportation is WorkbenchBase("SupplyChainTransportation",
         ReleaseOrderDocument = releaseOrderDocument;
 
         State = StateType.RecoverShipment;
-
+        lastAction.push(now);
         ContractUpdated("SendReleaseOrder");
     }
 
@@ -254,7 +257,26 @@ contract SupplyChainTransportation is WorkbenchBase("SupplyChainTransportation",
         DeliveryOrderDocument = deliveryOrderDocument;
 
         State = StateType.ShipmentDelivery;
-
+        lastAction.push(now);
         ContractUpdated("SendDeliveryOrder");
+    }
+    
+    function getMetaData() view public returns(bool _killed, string _Description, StateType _State, uint timeSinceLastAction, uint[] _lastAction)
+    {
+        _killed = Killed;
+        _Description = Description;
+        _State = State;
+        timeSinceLastAction = now - lastAction[lastAction.length-1];
+        _lastAction = lastAction;
+    }
+
+    function kill() public
+    // destroy contract
+    {
+        require(State == StateType.Terminated || State == StateType.ShipmentComplete);
+        require(msg.sender == InstanceShipper);
+        require(!Killed);
+        Killed = true;
+        selfdestruct(InstanceShipper);
     }
 }

@@ -167,7 +167,7 @@ class ExportClearanceAction extends Component {
                   <label>Choose either Customs or Exports Document</label>
                   <Input type='file' onChange={event => { this.captureDocs(event.target.files[0]) }} />
                   {this.state.verified && verifyMsg !== '' &&
-                    { verifyMsg }
+                    <div>{verifyMsg}</div>
                   }
                 </Form.Field>
                 <Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Verify</Button>

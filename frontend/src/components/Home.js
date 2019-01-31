@@ -31,7 +31,7 @@ class Home extends Component {
 
     const accounts = await web3.eth.getAccounts();
     const SupplyChainInstance = await supplychain_instance(this.props.match.params.chainAddress);
-    let contractState = await SupplyChainInstance.methods.State().call({ from: accounts[0] });
+    let metaData = await SupplyChainInstance.methods.getMetaData().call({ from: accounts[0] });
 
     let instanceOriginCustoms = await SupplyChainInstance.methods.InstanceOriginCustoms().call({ from: accounts[0] });
     let instanceShipper = await SupplyChainInstance.methods.InstanceShipper().call({ from: accounts[0] });
@@ -41,7 +41,7 @@ class Home extends Component {
     let instanceDrayageAgent = await SupplyChainInstance.methods.InstanceDrayageAgent().call({ from: accounts[0] });
     let instanceConsignee = await SupplyChainInstance.methods.InstanceConsignee().call({ from: accounts[0] });
 
-    this.setState({ loadingData: false, account: accounts[0], SupplyChainInstance, contractState, instanceShipper, instanceOriginCustoms, instanceFreightCarrier, instanceDestinationCustoms, instanceDestinationCustomsBroker, instanceDrayageAgent, instanceConsignee });
+    this.setState({ loadingData: false, account: accounts[0], SupplyChainInstance, contractState: metaData._State, instanceShipper, instanceOriginCustoms, instanceFreightCarrier, instanceDestinationCustoms, instanceDestinationCustomsBroker, instanceDrayageAgent, instanceConsignee });
   }
 
   render() {

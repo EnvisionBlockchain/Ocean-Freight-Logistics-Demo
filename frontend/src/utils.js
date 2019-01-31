@@ -62,4 +62,5 @@ export const stateLabel = {
   '8': "Shipment Delivery",
   '9': "Shipment Finalize",
   '10': "Shipment Complete",
+  '11': "Terminated",
 }

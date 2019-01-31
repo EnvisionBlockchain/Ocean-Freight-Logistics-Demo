@@ -18,7 +18,7 @@ class Factory extends Component {
     deployedChainsAddr: [],
     deployedChains: [],
     currentPage: 1,
-    chainsPerPage: 2,
+    chainsPerPage: 3,
   }
 
   async componentDidMount() {
@@ -27,18 +27,24 @@ class Factory extends Component {
 
     const accounts = await web3.eth.getAccounts();
     let deployedChainsAddr = await FactoryInstance.methods.getDeployedSupplyChain().call({ from: accounts[0] });
-    
+
+
     let last = this.state.chainsPerPage;
-    if (deployedChainsAddr.length < last){
-      last = deployedChainsAddr.lenght;
+    if (deployedChainsAddr.length < last) {
+      last = deployedChainsAddr.length;
     }
 
     let deployedChains = [];
     for (var i = 0; i < last; i++) {
-      const SupplyChainInstance = await supplychain_instance(deployedChainsAddr[i]);
-      let contractDesc = await SupplyChainInstance.methods.Description().call({ from: accounts[0] });
-      let contractState = await SupplyChainInstance.methods.State().call({ from: accounts[0] });
-      deployedChains.push([deployedChainsAddr[i], contractDesc, contractState]);
+      try {
+        const SupplyChainInstance = await supplychain_instance(deployedChainsAddr[i]);
+        const InstanceShipper = await SupplyChainInstance.methods.InstanceShipper().call({ from: accounts[0] });
+        let metaData = await SupplyChainInstance.methods.getMetaData().call({ from: accounts[0] });
+        console.log(metaData);
+        deployedChains.push([deployedChainsAddr[i], metaData, InstanceShipper]);
+      } catch (e) {
+
+      }
     }
 
     this.setState({ loadingData: false, account: accounts[0], deployedChainsAddr, deployedChains });
@@ -48,7 +54,7 @@ class Factory extends Component {
     const currentPage = Number(event.target.id);
     const indexOfLastChain = currentPage * this.state.chainsPerPage;
     const indexOfFirstChain = indexOfLastChain - this.state.chainsPerPage;
-    
+
     this.getChains(indexOfFirstChain, indexOfLastChain);
     this.setState({ currentPage });
   }
@@ -57,16 +63,20 @@ class Factory extends Component {
     this.setState({ loadingData: true });
     const { account, deployedChainsAddr } = this.state;
 
-    if (last > this.state.deployedChainsAddr.length){
+    if (last > this.state.deployedChainsAddr.length) {
       last = this.state.deployedChainsAddr.length;
     }
 
     let deployedChains = [];
     for (var i = first; i < last; i++) {
-      const SupplyChainInstance = await supplychain_instance(deployedChainsAddr[i]);
-      let contractDesc = await SupplyChainInstance.methods.Description().call({ from: account });
-      let contractState = await SupplyChainInstance.methods.State().call({ from: account });
-      deployedChains.push([deployedChainsAddr[i], contractDesc, contractState]);
+      try {
+        const SupplyChainInstance = await supplychain_instance(deployedChainsAddr[i]);
+        const InstanceShipper = await SupplyChainInstance.methods.InstanceShipper().call({ from: account });
+        let metaData = await SupplyChainInstance.methods.getMetaData().call({ from: account });
+        deployedChains.push([deployedChainsAddr[i], metaData, InstanceShipper]);
+      } catch (e) {
+
+      }
     }
 
     this.setState({ deployedChains, loadingData: false });
@@ -74,20 +84,50 @@ class Factory extends Component {
 
   renderChains = () => {
     let items = this.state.deployedChains.map((chainDets, id) => {
+
+      var seconds = parseInt(chainDets[1].timeSinceLastAction, 10);
+      var days = Math.floor(seconds / (3600 * 24));
+      seconds -= days * 3600 * 24;
+      var hrs = Math.floor(seconds / 3600);
+      seconds -= hrs * 3600;
+      var mnts = Math.floor(seconds / 60);
+      seconds -= mnts * 60;
+
       return (
-        <Card key={id} fluid href={'/UI-project/' + chainDets[0]} style={{ overflowWrap: 'break-word' }}>
+        <Card key={id} fluid style={{ overflowWrap: 'break-word' }}>
           <Card.Content>
             <Card.Header>Address: {chainDets[0]}</Card.Header>
-            <Card.Meta>Click For Details</Card.Meta>
-            <Card.Description>Description: {chainDets[1]}</Card.Description>
-            <Card.Description>Stage: {parseInt(chainDets[2], 10) + 1}/11 (<span style={{ "color": "red" }}>{stateLabel[chainDets[2]]}</span>)</Card.Description><br />
-            <Progress value={chainDets[2]} total='10' indicating />
+            <Card.Meta>Time since last action: <b>{days} days {hrs} hrs {mnts} min {seconds} sec</b></Card.Meta>
+            <Card.Description>Description: {chainDets[1]._Description}</Card.Description>
+            {(chainDets[1]._State !== '11' &&
+              <div>
+                <Card.Description>Stage: {parseInt(chainDets[1]._State, 10) + 1}/11 (<span style={{ "color": "red" }}>{stateLabel[chainDets[1]._State]}</span>)</Card.Description><br />
+                <Progress value={chainDets[1]._State} total='10' indicating />
+                <Button href={'/UI-project/' + chainDets[0]} primary icon labelPosition="right" floated="right"><Icon name='right arrow' />Details</Button>
+              </div>) ||
+              <div>Stage: <span style={{ "color": "red" }}>Terminated</span></div>
+            }
+
+            {this.state.account === chainDets[2] &&
+              <Button loading={this.state.loading} disabled={this.state.loading} basic color='red' icon labelPosition="left" floated='right' onClick={() => this.deleteContract(chainDets[0])}><Icon name="warning sign" />Delete</Button>
+            }
           </Card.Content>
         </Card>
       );
     });
 
     return <Card.Group>{items}</Card.Group>;
+  }
+
+  deleteContract = async (address) => {
+    this.setState({ loading: true });
+    try {
+      const SupplyChainInstance = await supplychain_instance(address);
+      await SupplyChainInstance.methods.kill().send({ from: this.state.account });
+    } catch (e) {
+      this.setState({ errorMessage: e.message });
+    }
+    this.setState({ loading: false });
   }
 
   onSubmit = async (event) => {
@@ -138,8 +178,7 @@ class Factory extends Component {
         <Grid stackable reversed='mobile'>
           <Grid.Row>
             <Grid.Column width={12}>
-              {this.state.deployedChainsAddr.length > 0 && this.renderChains()}
-              {this.state.deployedChainsAddr.length === 0 && <p>No contracts deployed!</p>}
+              {(this.state.deployedChainsAddr.length > 0 && this.renderChains()) || <b>No contracts deployed!</b>}
             </Grid.Column>
             <Grid.Column width={4}>
               <Grid.Row>

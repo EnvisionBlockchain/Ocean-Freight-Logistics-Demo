@@ -9,6 +9,20 @@ const {
 } = require("@azure/storage-file");
 
 
+export function calDateTime(unixDate) {
+  var date = new Date(unixDate * 1000);
+  var year = date.getFullYear();
+  var month = "0" + (date.getMonth() + 1);
+  var day = date.getDate();
+  var hour = date.getHours();
+  var min = date.getMinutes();
+  var sec = date.getSeconds();
+  var formattedDate = month.substr(-2) + '/' + day + '/' + year;
+  var formattedTime = hour + ":" + min + ":" + sec;
+  return [formattedDate, formattedTime];
+}
+
+
 export async function azureUpload(fileName) {
   const account = "uploadcustomsfiles";
   const accountSas = config.accountSAS;

@@ -8,6 +8,7 @@
 # production
 
 # misc
+.gitignore
 .DS_Store
 .env.local
 .env.development.local
@@ -21,3 +22,4 @@ yarn-error.log*
 
 build/
 frontend/src/config.js
+frontend/build

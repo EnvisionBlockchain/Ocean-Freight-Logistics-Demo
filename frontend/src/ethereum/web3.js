@@ -1,6 +1,7 @@
 import Web3 from 'web3';
 
 let web3, defaultAcc;
+
 function networkCheck() {
   web3.eth.net.getNetworkType((err, netId) => {
     switch (netId) {
@@ -30,15 +31,21 @@ async function get_account() {
   }
 }
 
-if (typeof window !== 'undefined' && typeof window.web3 !== 'undefined') {
+if (typeof window !== 'undefined' && typeof window.ethereum !== 'undefined') {
+  async function requestAccess() {
+    web3 = new Web3(window.ethereum);
+    await window.ethereum.enable();
+  }
+
+  requestAccess();
+  get_account();
+} else if (typeof window !== 'undefined' && typeof window.web3 !== 'undefined') {
   // We are in the browser and metamask is running.
 
   web3 = new Web3(window.web3.currentProvider);
   get_account();
-
 } else {
   // User is not running metamask
-
   alert("Please Install MetaMask from metamask.io");
   const provider = new Web3.providers.HttpProvider("http://ethygqbek-dns-reg1.eastus.cloudapp.azure.com:8540");
   web3 = new Web3(provider);

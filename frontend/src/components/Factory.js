@@ -40,7 +40,6 @@ class Factory extends Component {
         const SupplyChainInstance = await supplychain_instance(deployedChainsAddr[i]);
         const InstanceShipper = await SupplyChainInstance.methods.InstanceShipper().call({ from: accounts[0] });
         let metaData = await SupplyChainInstance.methods.getMetaData().call({ from: accounts[0] });
-        console.log(metaData);
         deployedChains.push([deployedChainsAddr[i], metaData, InstanceShipper]);
       } catch (e) {
 
@@ -84,7 +83,7 @@ class Factory extends Component {
 
   renderChains = () => {
     let items = this.state.deployedChains.map((chainDets, id) => {
-
+      
       var seconds = parseInt(chainDets[1].timeSinceLastAction, 10);
       var days = Math.floor(seconds / (3600 * 24));
       seconds -= days * 3600 * 24;

@@ -92,7 +92,7 @@ class Factory extends Component {
             <Card.Description>Description: {chainDets[1]._Description}</Card.Description>
             {(chainDets[1]._State !== '11' &&
               <div>
-                <Card.Description>Stage: {parseInt(chainDets[1]._State, 10) + 1}/11 (<span style={{ "color": "red" }}>{stateLabel[chainDets[1]._State]}</span>)</Card.Description><br />
+                <Card.Description>Stage: {parseInt(chainDets[1]._State, 10) + 1}/11 (<span style={{ "color": "red" }}>{stateLabel[chainDets[1]._State][0]}</span>)</Card.Description><br />
                 <Progress value={chainDets[1]._State} total='10' indicating />
                 <Link to={{
                   pathname: `/UI-project/${chainDets[0]}`,

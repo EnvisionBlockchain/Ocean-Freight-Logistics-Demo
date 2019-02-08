@@ -24,6 +24,7 @@ class Home extends Component {
     instanceShipper: '',
     instanceOriginCustoms: '',
     metaData: { _lastAction: [] },
+    allAddress: [],
   }
 
   async componentDidMount() {
@@ -34,17 +35,13 @@ class Home extends Component {
     const SupplyChainInstance = await supplychain_instance(this.props.match.params.chainAddress);
     let metaData = this.props.location.state.metaData;
     this.setState({ metaData });
-    metaData = await SupplyChainInstance.methods.getMetaData().call({ from: accounts[0] });
+    metaData = await SupplyChainInstance.methods.getMetaData().call();
 
-    let instanceOriginCustoms = await SupplyChainInstance.methods.InstanceOriginCustoms().call({ from: accounts[0] });
     let instanceShipper = this.props.location.state.InstanceShipper;
-    let instanceFreightCarrier = await SupplyChainInstance.methods.InstanceFreightCarrier().call({ from: accounts[0] });
-    let instanceDestinationCustoms = await SupplyChainInstance.methods.InstanceDestinationCustoms().call({ from: accounts[0] });
-    let instanceDestinationCustomsBroker = await SupplyChainInstance.methods.InstanceDestinationCustomsBroker().call({ from: accounts[0] });
-    let instanceDrayageAgent = await SupplyChainInstance.methods.InstanceDrayageAgent().call({ from: accounts[0] });
-    let instanceConsignee = await SupplyChainInstance.methods.InstanceConsignee().call({ from: accounts[0] });
+    let allAddress = await SupplyChainInstance.methods.getAllAddress().call();
+    //let { instanceOriginCustoms, instanceFreightCarrier, instanceDestinationCustoms, instanceDestinationCustomsBroker, instanceDrayageAgent, instanceConsignee } = Object.values(allAddress);
 
-    this.setState({ loadingData: false, account: accounts[0], SupplyChainInstance, metaData, contractState: metaData._State, instanceShipper, instanceOriginCustoms, instanceFreightCarrier, instanceDestinationCustoms, instanceDestinationCustomsBroker, instanceDrayageAgent, instanceConsignee });
+    this.setState({ loadingData: false, account: accounts[0], allAddress, SupplyChainInstance, metaData, contractState: metaData._State, instanceShipper });
   }
 
   renderStatus = () => {
@@ -59,7 +56,7 @@ class Home extends Component {
             <Table.Cell>
               <Header as='h4'>
                 <Header.Content>
-                  {id + 1}. {stateLabel[id.toString()]}
+                  {id + 1}. {stateLabel[id.toString()][0]}
                 </Header.Content>
               </Header>
             </Table.Cell>
@@ -68,6 +65,9 @@ class Home extends Component {
             </Table.Cell>
             <Table.Cell>
               {dateTime[1]}
+            </Table.Cell>
+            <Table.Cell>
+              {stateLabel[id.toString()][1]}
             </Table.Cell>
           </Table.Row>
         );
@@ -77,7 +77,7 @@ class Home extends Component {
             <Table.Cell>
               <Header as='h4'>
                 <Header.Content>
-                  <span style={{ color: "red" }}>{id + 1}. {stateLabel[id.toString()]}</span>
+                  <span style={{ color: "red" }}>{id + 1}. {stateLabel[id.toString()][0]}</span>
                 </Header.Content>
               </Header>
             </Table.Cell>
@@ -86,6 +86,9 @@ class Home extends Component {
             </Table.Cell>
             <Table.Cell>
               {dateTime[1]}
+            </Table.Cell>
+            <Table.Cell>
+              {stateLabel[id.toString()][1]}
             </Table.Cell>
           </Table.Row>
         );
@@ -101,6 +104,7 @@ class Home extends Component {
             </Table.HeaderCell>
             <Table.HeaderCell><Header as='h4'>Date</Header></Table.HeaderCell>
             <Table.HeaderCell><Header as='h4'>Time</Header></Table.HeaderCell>
+            <Table.HeaderCell><Header as='h4'>Role</Header></Table.HeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>{items}</Table.Body>
@@ -110,7 +114,7 @@ class Home extends Component {
 
   render() {
     const { contractState, metaData, account } = this.state;
-    if (this.state.loadingData) {
+    if (this.state.loadingData || typeof stateLabel[contractState] === "undefined") {
       return (
         <Dimmer active inverted>
           <Loader size='massive'>Loading...</Loader>
@@ -122,10 +126,10 @@ class Home extends Component {
     return (
       <div>
         <h1>Supplychain Transportation #{this.props.location.state.contractNo + 1}</h1>
-        <h3>Contract State:<span style={{ "color": "red" }}> {stateLabel[contractState]}</span></h3>
+        <h3>Contract State:<span style={{ "color": "red" }}> {stateLabel[contractState][0]}</span></h3>
 
         <Grid stackable reversed="mobile">
-          <Grid.Column mobile={16} computer={10}>
+          <Grid.Column mobile={16} computer={8}>
             <Table striped celled collapsing>
               <Table.Header>
                 <Table.Row>
@@ -201,7 +205,7 @@ class Home extends Component {
                       </Header.Content>
                     </Header>
                   </Table.Cell>
-                  <Table.Cell>{this.state.instanceFreightCarrier}</Table.Cell>
+                  <Table.Cell>{this.state.allAddress[1]}</Table.Cell>
                 </Table.Row>
 
                 <Table.Row>
@@ -212,7 +216,7 @@ class Home extends Component {
                       </Header.Content>
                     </Header>
                   </Table.Cell>
-                  <Table.Cell>{this.state.instanceOriginCustoms}</Table.Cell>
+                  <Table.Cell>{this.state.allAddress[0]}</Table.Cell>
                 </Table.Row>
               </Table.Body>
             </Table>
@@ -221,46 +225,75 @@ class Home extends Component {
           {this.renderStatus()}
         </Grid>
 
-        <h3>Pending Action:</h3>
-
+        <br />
         {this.state.instanceShipper === account && contractState === '0' &&
-          <SendForExportClearance account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
+          <div>
+            <h3>Pending Action: (Role: <i style={{ color: "red" }}>Instance Shipper</i>)</h3>
+            <SendForExportClearance account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
+          </div>
         }
 
-        {this.state.instanceOriginCustoms === account && contractState === '1' &&
-          <ExportClearanceAction account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
+        {this.state.allAddress[0] === account && contractState === '1' &&
+          <div>
+            <h3>Pending Action: (Role: <i style={{ color: "red" }}>Instance Origin Customs</i>)</h3>
+            <ExportClearanceAction account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
+          </div>
         }
 
         {this.state.instanceShipper === account && contractState === '2' &&
-          <InitiateShipment account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
+          <div>
+            <h3>Pending Action: (Role: <i style={{ color: "red" }}>Instance Shipper</i>)</h3>
+            <InitiateShipment account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
+          </div>
         }
 
-        {this.state.instanceFreightCarrier === account && contractState === '3' &&
-          <BoardingShipment account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
+        {this.state.allAddress[1] === account && contractState === '3' &&
+          <div>
+            <h3>Pending Action: (Role: <i style={{ color: "red" }}>Instance Freight Carrier</i>)</h3>
+            <BoardingShipment account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
+          </div>
         }
 
-        {this.state.instanceFreightCarrier === account && contractState === '4' &&
-          <TransferLading account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
+        {this.state.allAddress[1] === account && contractState === '4' &&
+          <div>
+            <h3>Pending Action: (Role: <i style={{ color: "red" }}>Instance Freight Carrier</i>)</h3>
+            <TransferLading account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
+          </div>
         }
 
-        {this.state.instanceDestinationCustomsBroker === account && contractState === '5' &&
-          <ShipmentTransit account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
+        {this.state.allAddress[3] === account && contractState === '5' &&
+          <div>
+            <h3>Pending Action: (Role: <i style={{ color: "red" }}>Instance Destination Customs Broker</i>)</h3>
+            <ShipmentTransit account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
+          </div>
         }
 
-        {this.state.instanceDestinationCustoms === account && contractState === '6' &&
-          <ImportClearance account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
+        {this.state.allAddress[2] === account && contractState === '6' &&
+          <div>
+            <h3>Pending Action: (Role: <i style={{ color: "red" }}>Instance Destination Customs</i>)</h3>
+            <ImportClearance account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
+          </div>
         }
 
-        {this.state.instanceDestinationCustomsBroker === account && contractState === '7' &&
-          <RecoverOrder account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
+        {this.state.allAddress[3] === account && contractState === '7' &&
+          <div>
+            <h3>Pending Action: (Role: <i style={{ color: "red" }}>Instance Destination Customs Broker</i>)</h3>
+            <RecoverOrder account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
+          </div>
         }
 
-        {this.state.instanceDrayageAgent === account && contractState === '8' &&
-          <DeliveryOrder account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
+        {this.state.allAddress[4] === account && contractState === '8' &&
+          <div>
+            <h3>Pending Action: (Role: <i style={{ color: "red" }}>Instance Drayage Agent</i>)</h3>
+            <DeliveryOrder account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
+          </div>
         }
 
-        {this.state.instanceConsignee === account && contractState === '9' &&
-          <ApproveDelivery account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
+        {this.state.allAddress[5] === account && contractState === '9' &&
+          <div>
+            <h3>Pending Action: (Role: <i style={{ color: "red" }}>Instance Consignee</i>)</h3>
+            <ApproveDelivery account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
+          </div>
         }
 
         <br /><br />

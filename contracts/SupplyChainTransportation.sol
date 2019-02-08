@@ -270,6 +270,10 @@ contract SupplyChainTransportation is WorkbenchBase("SupplyChainTransportation",
         _lastAction = lastAction;
     }
 
+    function getAllAddress() view public returns(address, address, address, address, address, address){
+        return (InstanceOriginCustoms, InstanceFreightCarrier, InstanceDestinationCustoms, InstanceDestinationCustomsBroker, InstanceDrayageAgent, InstanceConsignee);
+    }
+
     function kill() public
     // destroy contract
     {

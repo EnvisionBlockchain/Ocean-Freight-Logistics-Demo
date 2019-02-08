@@ -20,7 +20,7 @@ class Factory extends Component {
     deployedChainsAddr: [],
     deployedChains: [],
     currentPage: 1,
-    chainsPerPage: 3,
+    chainsPerPage: 4,
   }
 
   async componentDidMount() {
@@ -44,20 +44,11 @@ class Factory extends Component {
         let metaData = await SupplyChainInstance.methods.getMetaData().call({ from: accounts[0] });
         deployedChains.push([deployedChainsAddr[i], metaData, InstanceShipper, i]);
       } catch (e) {
-        deployedChains.push([deployedChainsAddr[i], { _killed: true }, "0x0000", 0]);
+        //deployedChains.push([deployedChainsAddr[i], { _killed: true }, "0x0000", 0]);
       }
     }
 
     this.setState({ loadingData: false, account: accounts[0], deployedChainsAddr, deployedChains });
-  }
-
-  handleClick = (event) => {
-    const currentPage = Number(event.target.id);
-    const indexOfLastChain = currentPage * this.state.chainsPerPage;
-    const indexOfFirstChain = indexOfLastChain - this.state.chainsPerPage;
-
-    this.getChains(indexOfFirstChain, indexOfLastChain);
-    this.setState({ currentPage });
   }
 
   getChains = async (first, last) => {
@@ -76,7 +67,7 @@ class Factory extends Component {
         let metaData = await SupplyChainInstance.methods.getMetaData().call({ from: account });
         deployedChains.push([deployedChainsAddr[i], metaData, InstanceShipper, i]);
       } catch (e) {
-        deployedChains.push([deployedChainsAddr[i], { _killed: true }, "0x0000", 0]);
+        //deployedChains.push([deployedChainsAddr[i], { _killed: true }, "0x0000", 0]);
       }
     }
 
@@ -85,59 +76,56 @@ class Factory extends Component {
 
   renderChains = () => {
     let items = this.state.deployedChains.map((chainDets, id) => {
+      var seconds = parseInt(chainDets[1].timeSinceLastAction, 10);
+      var days = Math.floor(seconds / (3600 * 24));
+      seconds -= days * 3600 * 24;
+      var hrs = Math.floor(seconds / 3600);
+      seconds -= hrs * 3600;
+      var mnts = Math.floor(seconds / 60);
+      seconds -= mnts * 60;
 
-      if (!chainDets[1]._killed) {
-        var seconds = parseInt(chainDets[1].timeSinceLastAction, 10);
-        var days = Math.floor(seconds / (3600 * 24));
-        seconds -= days * 3600 * 24;
-        var hrs = Math.floor(seconds / 3600);
-        seconds -= hrs * 3600;
-        var mnts = Math.floor(seconds / 60);
-        seconds -= mnts * 60;
+      return (
+        <Card key={id} fluid style={{ overflowWrap: 'break-word' }}>
+          <Card.Content>
+            <Card.Header>Address: {chainDets[0]}</Card.Header>
+            <Card.Meta>Time since last action: <b>{days} days {hrs} hrs {mnts} min {seconds} sec</b></Card.Meta>
+            <Card.Description>Description: {chainDets[1]._Description}</Card.Description>
+            {(chainDets[1]._State !== '11' &&
+              <div>
+                <Card.Description>Stage: {parseInt(chainDets[1]._State, 10) + 1}/11 (<span style={{ "color": "red" }}>{stateLabel[chainDets[1]._State]}</span>)</Card.Description><br />
+                <Progress value={chainDets[1]._State} total='10' indicating />
+                <Link to={{
+                  pathname: `/UI-project/${chainDets[0]}`,
+                  state: {
+                    metaData: chainDets[1],
+                    InstanceShipper: chainDets[2],
+                    contractNo: chainDets[3]
+                  }
+                }}>
+                  <Button primary icon labelPosition="right" floated="right"><Icon name='right arrow' />Details</Button>
+                </Link>
+              </div>) ||
+              <div>Stage: <span style={{ "color": "red" }}>Terminated</span></div>
+            }
 
-        return (
-          <Card key={id} fluid style={{ overflowWrap: 'break-word' }}>
-            <Card.Content>
-              <Card.Header>Address: {chainDets[0]}</Card.Header>
-              <Card.Meta>Time since last action: <b>{days} days {hrs} hrs {mnts} min {seconds} sec</b></Card.Meta>
-              <Card.Description>Description: {chainDets[1]._Description}</Card.Description>
-              {(chainDets[1]._State !== '11' &&
-                <div>
-                  <Card.Description>Stage: {parseInt(chainDets[1]._State, 10) + 1}/11 (<span style={{ "color": "red" }}>{stateLabel[chainDets[1]._State]}</span>)</Card.Description><br />
-                  <Progress value={chainDets[1]._State} total='10' indicating />
-                  <Link to={{
-                    pathname: `/UI-project/${chainDets[0]}`,
-                    state: {
-                      metaData: chainDets[1],
-                      InstanceShipper: chainDets[2],
-                      contractNo: chainDets[3]
-                    }
-                  }}>
-                    <Button primary icon labelPosition="right" floated="right"><Icon name='right arrow' />Details</Button>
-                  </Link>
-                </div>) ||
-                <div>Stage: <span style={{ "color": "red" }}>Terminated</span></div>
-              }
-
-              {this.state.account === chainDets[2] &&
-                <Button loading={this.state.loading} disabled={this.state.loading} basic color='red' icon labelPosition="left" floated='right' onClick={() => this.deleteContract(chainDets[0])}><Icon name="warning sign" />Delete</Button>
-              }
-            </Card.Content>
-          </Card>
-        );
-      } else {
-        return (
-          <Card key={id} fluid style={{ overflowWrap: 'break-word' }}>
-            <Card.Content>
-              <Card.Header>Address: {chainDets[0]}</Card.Header>
-              <Card.Description>[INFO] <span style={{ "color": "red" }}>Contract Deleted!</span></Card.Description>
-            </Card.Content>
-          </Card>
-        );
-      }
+            {this.state.account === chainDets[2] &&
+              <Button loading={this.state.loading} disabled={this.state.loading} basic color='red' icon labelPosition="left" floated='right' onClick={() => this.deleteContract(chainDets[0])}><Icon name="warning sign" />Delete</Button>
+            }
+          </Card.Content>
+        </Card>
+      );
     });
 
     return <Card.Group>{items}</Card.Group>;
+  }
+
+  handleClick = (event) => {
+    const currentPage = Number(event.target.id);
+    const indexOfLastChain = currentPage * this.state.chainsPerPage;
+    const indexOfFirstChain = indexOfLastChain - this.state.chainsPerPage;
+
+    this.getChains(indexOfFirstChain, indexOfLastChain);
+    this.setState({ currentPage });
   }
 
   deleteContract = async (address) => {

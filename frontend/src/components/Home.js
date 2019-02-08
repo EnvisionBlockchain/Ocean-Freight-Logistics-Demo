@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Loader, Dimmer, Table, Header, Label, Grid } from "semantic-ui-react";
+import { Loader, Dimmer, Table, Header, Grid } from "semantic-ui-react";
 import web3 from "../ethereum/web3";
 import { SupplyChainInstance as supplychain_instance } from "../ethereum/contractInstance";
 import { stateLabel, calDateTime } from "../utils";
@@ -23,6 +23,7 @@ class Home extends Component {
     contractState: '',
     instanceShipper: '',
     instanceOriginCustoms: '',
+    metaData: { _lastAction: [] },
   }
 
   async componentDidMount() {
@@ -32,6 +33,8 @@ class Home extends Component {
     const accounts = await web3.eth.getAccounts();
     const SupplyChainInstance = await supplychain_instance(this.props.match.params.chainAddress);
     let metaData = this.props.location.state.metaData;
+    this.setState({ metaData });
+    metaData = await SupplyChainInstance.methods.getMetaData().call({ from: accounts[0] });
 
     let instanceOriginCustoms = await SupplyChainInstance.methods.InstanceOriginCustoms().call({ from: accounts[0] });
     let instanceShipper = this.props.location.state.InstanceShipper;
@@ -41,11 +44,11 @@ class Home extends Component {
     let instanceDrayageAgent = await SupplyChainInstance.methods.InstanceDrayageAgent().call({ from: accounts[0] });
     let instanceConsignee = await SupplyChainInstance.methods.InstanceConsignee().call({ from: accounts[0] });
 
-    this.setState({ loadingData: false, account: accounts[0], SupplyChainInstance, contractState: metaData._State, instanceShipper, instanceOriginCustoms, instanceFreightCarrier, instanceDestinationCustoms, instanceDestinationCustomsBroker, instanceDrayageAgent, instanceConsignee });
+    this.setState({ loadingData: false, account: accounts[0], SupplyChainInstance, metaData, contractState: metaData._State, instanceShipper, instanceOriginCustoms, instanceFreightCarrier, instanceDestinationCustoms, instanceDestinationCustomsBroker, instanceDrayageAgent, instanceConsignee });
   }
 
   renderStatus = () => {
-    let arr = this.props.location.state.metaData._lastAction;
+    let arr = this.state.metaData._lastAction;
     let arrLen = arr.length;
     let items = arr.map((action, id) => {
       let dateTime = calDateTime(action);
@@ -74,7 +77,7 @@ class Home extends Component {
             <Table.Cell>
               <Header as='h4'>
                 <Header.Content>
-                  <span style={{color:"red"}}>{id + 1}. {stateLabel[id.toString()]}</span>
+                  <span style={{ color: "red" }}>{id + 1}. {stateLabel[id.toString()]}</span>
                 </Header.Content>
               </Header>
             </Table.Cell>
@@ -106,6 +109,7 @@ class Home extends Component {
   }
 
   render() {
+    const { contractState, metaData, account } = this.state;
     if (this.state.loadingData) {
       return (
         <Dimmer active inverted>
@@ -114,8 +118,7 @@ class Home extends Component {
       );
     }
 
-    const { contractState } = this.state;
-    let dateTime = calDateTime(this.props.location.state.metaData._lastAction[0]);
+    let dateTime = calDateTime(metaData._lastAction[0]);
     return (
       <div>
         <h1>Supplychain Transportation #{this.props.location.state.contractNo + 1}</h1>
@@ -214,50 +217,50 @@ class Home extends Component {
               </Table.Body>
             </Table>
           </Grid.Column>
-          
-            {this.renderStatus()}
+
+          {this.renderStatus()}
         </Grid>
 
         <h3>Pending Action:</h3>
 
-        {this.state.instanceShipper === this.state.account && contractState === '0' &&
-          <SendForExportClearance account={this.state.account} SupplyChainInstance={this.state.SupplyChainInstance} />
+        {this.state.instanceShipper === account && contractState === '0' &&
+          <SendForExportClearance account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
         }
 
-        {this.state.instanceOriginCustoms === this.state.account && contractState === '1' &&
-          <ExportClearanceAction account={this.state.account} SupplyChainInstance={this.state.SupplyChainInstance} />
+        {this.state.instanceOriginCustoms === account && contractState === '1' &&
+          <ExportClearanceAction account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
         }
 
-        {this.state.instanceShipper === this.state.account && contractState === '2' &&
-          <InitiateShipment account={this.state.account} SupplyChainInstance={this.state.SupplyChainInstance} />
+        {this.state.instanceShipper === account && contractState === '2' &&
+          <InitiateShipment account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
         }
 
-        {this.state.instanceFreightCarrier === this.state.account && contractState === '3' &&
-          <BoardingShipment account={this.state.account} SupplyChainInstance={this.state.SupplyChainInstance} />
+        {this.state.instanceFreightCarrier === account && contractState === '3' &&
+          <BoardingShipment account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
         }
 
-        {this.state.instanceFreightCarrier === this.state.account && contractState === '4' &&
-          <TransferLading account={this.state.account} SupplyChainInstance={this.state.SupplyChainInstance} />
+        {this.state.instanceFreightCarrier === account && contractState === '4' &&
+          <TransferLading account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
         }
 
-        {this.state.instanceDestinationCustomsBroker === this.state.account && contractState === '5' &&
-          <ShipmentTransit account={this.state.account} SupplyChainInstance={this.state.SupplyChainInstance} />
+        {this.state.instanceDestinationCustomsBroker === account && contractState === '5' &&
+          <ShipmentTransit account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
         }
 
-        {this.state.instanceDestinationCustoms === this.state.account && contractState === '6' &&
-          <ImportClearance account={this.state.account} SupplyChainInstance={this.state.SupplyChainInstance} />
+        {this.state.instanceDestinationCustoms === account && contractState === '6' &&
+          <ImportClearance account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
         }
 
-        {this.state.instanceDestinationCustomsBroker === this.state.account && contractState === '7' &&
-          <RecoverOrder account={this.state.account} SupplyChainInstance={this.state.SupplyChainInstance} />
+        {this.state.instanceDestinationCustomsBroker === account && contractState === '7' &&
+          <RecoverOrder account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
         }
 
-        {this.state.instanceDrayageAgent === this.state.account && contractState === '8' &&
-          <DeliveryOrder account={this.state.account} SupplyChainInstance={this.state.SupplyChainInstance} />
+        {this.state.instanceDrayageAgent === account && contractState === '8' &&
+          <DeliveryOrder account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
         }
 
-        {this.state.instanceConsignee === this.state.account && contractState === '9' &&
-          <ApproveDelivery account={this.state.account} SupplyChainInstance={this.state.SupplyChainInstance} />
+        {this.state.instanceConsignee === account && contractState === '9' &&
+          <ApproveDelivery account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
         }
 
         <br /><br />

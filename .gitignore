@@ -23,3 +23,6 @@ yarn-error.log*
 build/
 frontend/src/config.js
 frontend/build
+
+todo.txt
+imp_details.txt

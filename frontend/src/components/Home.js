@@ -225,75 +225,45 @@ class Home extends Component {
           {this.renderStatus()}
         </Grid>
 
-        <br />
+        <h3>Pending Action: </h3>
         {this.state.instanceShipper === account && contractState === '0' &&
-          <div>
-            <h3>Pending Action: (Role: <i style={{ color: "red" }}>Instance Shipper</i>)</h3>
-            <SendForExportClearance account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
-          </div>
+          <SendForExportClearance account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
         }
 
         {this.state.allAddress[0] === account && contractState === '1' &&
-          <div>
-            <h3>Pending Action: (Role: <i style={{ color: "red" }}>Instance Origin Customs</i>)</h3>
-            <ExportClearanceAction account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
-          </div>
+          <ExportClearanceAction account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
         }
 
         {this.state.instanceShipper === account && contractState === '2' &&
-          <div>
-            <h3>Pending Action: (Role: <i style={{ color: "red" }}>Instance Shipper</i>)</h3>
-            <InitiateShipment account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
-          </div>
+          <InitiateShipment account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
         }
 
         {this.state.allAddress[1] === account && contractState === '3' &&
-          <div>
-            <h3>Pending Action: (Role: <i style={{ color: "red" }}>Instance Freight Carrier</i>)</h3>
-            <BoardingShipment account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
-          </div>
+          <BoardingShipment account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
         }
 
         {this.state.allAddress[1] === account && contractState === '4' &&
-          <div>
-            <h3>Pending Action: (Role: <i style={{ color: "red" }}>Instance Freight Carrier</i>)</h3>
-            <TransferLading account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
-          </div>
+          <TransferLading account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
         }
 
         {this.state.allAddress[3] === account && contractState === '5' &&
-          <div>
-            <h3>Pending Action: (Role: <i style={{ color: "red" }}>Instance Destination Customs Broker</i>)</h3>
-            <ShipmentTransit account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
-          </div>
+          <ShipmentTransit account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
         }
 
         {this.state.allAddress[2] === account && contractState === '6' &&
-          <div>
-            <h3>Pending Action: (Role: <i style={{ color: "red" }}>Instance Destination Customs</i>)</h3>
-            <ImportClearance account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
-          </div>
+          <ImportClearance account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
         }
 
         {this.state.allAddress[3] === account && contractState === '7' &&
-          <div>
-            <h3>Pending Action: (Role: <i style={{ color: "red" }}>Instance Destination Customs Broker</i>)</h3>
-            <RecoverOrder account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
-          </div>
+          <RecoverOrder account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
         }
 
         {this.state.allAddress[4] === account && contractState === '8' &&
-          <div>
-            <h3>Pending Action: (Role: <i style={{ color: "red" }}>Instance Drayage Agent</i>)</h3>
-            <DeliveryOrder account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
-          </div>
+          <DeliveryOrder account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
         }
 
         {this.state.allAddress[5] === account && contractState === '9' &&
-          <div>
-            <h3>Pending Action: (Role: <i style={{ color: "red" }}>Instance Consignee</i>)</h3>
-            <ApproveDelivery account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
-          </div>
+          <ApproveDelivery account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
         }
 
         <br /><br />

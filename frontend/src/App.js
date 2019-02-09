@@ -10,7 +10,7 @@ class App extends Component {
       <div className="App">
         <center>
           <h1>Choose which version of our app to use</h1>
-          <a href="/workbench"> Workbench </a>
+          <a href="/dashboard"> Workbench </a>
           <p><h3>Eth Baas</h3></p>
         </center>
       </div>

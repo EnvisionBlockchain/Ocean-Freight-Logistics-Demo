@@ -4,7 +4,8 @@ import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 import { Route, Link, BrowserRouter as Router } from 'react-router-dom'
-import Workbench from './components/index_wb.js';
+import Workbench from './components/workbench/login.js';
+import Dashboard from './components/workbench/Dashboard.js';
 
 
 
@@ -13,6 +14,7 @@ const routing= (
     <div>
       <Route exact path="/" component={App} />
       <Route path="/workbench" component={Workbench} />
+      <Route path="/dashboard" component={Dashboard} />
     </div>
   </Router>
 )

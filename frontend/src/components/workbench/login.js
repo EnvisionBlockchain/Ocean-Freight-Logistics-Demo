@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {BrowserRouter, Route, Switch } from 'react-router-dom';
+import {BrowserRouter, Route, Switch, Link } from 'react-router-dom';
 import 'adal-angular';
 import AuthenticationContext from 'adal-angular';
 
@@ -33,12 +33,12 @@ class Workbench extends Component {
     var user = authContext.getCachedUser();
     if (!user) {
       authContext.login();
-      console.log("user is null")
     }
     else {
       console.log(user);
     }
   }
+
   logout(authContext) {
     authContext.logOut();
   }

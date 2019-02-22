@@ -65,16 +65,16 @@ export function azureDownload(fileName) {
 
 
 export const stateLabel = {
-  '0': ["Begin Trade", "Instance Shipper"],
-  '1': ["Export Clearance", "Instance Origin Customs"],
-  '2': ["Shipment Initiation", "Instance Shipper"],
-  '3': ["Shipment Boarding", "Instance Freight Carrier"],
-  '4': ["Transfer Bill of Lading", "Instance Freight Carrier"],
-  '5': ["Shipment In Transit", "Instance Destination Customs Broker"],
-  '6': ["Import Clearance", "Instance Destination Customs"],
-  '7': ["Recover Shipment", "Instance Destination Customs Broker"],
-  '8': ["Shipment Delivery", "Instance Drayage Agent"],
-  '9': ["Shipment Finalize", "Instance Consignee"],
+  '0': ["Begin Trade", "Shipper"],
+  '1': ["Export Clearance", "Origin Customs"],
+  '2': ["Shipment Initiation", "Shipper"],
+  '3': ["Shipment Boarding", "Freight Carrier"],
+  '4': ["Transfer Bill of Lading", "Freight Carrier"],
+  '5': ["Shipment In Transit", "Destination Customs Broker"],
+  '6': ["Import Clearance", "Destination Customs"],
+  '7': ["Recover Shipment", "Destination Customs Broker"],
+  '8': ["Shipment Delivery", "Drayage Agent"],
+  '9': ["Shipment Finalize", "Consignee"],
   '10': ["Shipment Complete", ""],
   '11': ["Terminated", ""],
 }

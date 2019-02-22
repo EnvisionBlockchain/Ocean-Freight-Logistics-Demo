@@ -167,7 +167,7 @@ class Factory extends Component {
     if (this.state.msg === '') {
       statusMessage = null;
     } else {
-      statusMessage = <Message floating positive header="Success!" content={this.state.msg} />;
+      statusMessage = <Message floating positive header={this.state.msg} />;
     }
 
     const pageNumbers = [];
@@ -204,7 +204,7 @@ class Factory extends Component {
                         <Input onChange={event => this.setState({ freightCarrierAddress: event.target.value })} />
                       </Form.Field>
                       <Form.Field>
-                        <label>Oigin Customs Address</label>
+                        <label>Origin Customs Address</label>
                         <Input onChange={event => this.setState({ originCustomsAddress: event.target.value })} />
                       </Form.Field>
                       <Form.Field>

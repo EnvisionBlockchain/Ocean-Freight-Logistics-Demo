@@ -137,7 +137,7 @@ class BoardingShipment extends Component {
     if (this.state.msg === '') {
       statusMessage = null;
     } else {
-      statusMessage = <Message floating positive header="Success!" content={this.state.msg} />;
+      statusMessage = <Message floating positive header={this.state.msg} />;
     }
 
     return (
@@ -189,7 +189,7 @@ class BoardingShipment extends Component {
                     <div>{verifyMsg}</div>
                   }
                 </Form.Field>
-                <Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Verify</Button>
+                {/*<Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Verify</Button>*/}
                 <Message error header="Oops!" content={this.state.errorMessage} />
                 {statusMessage}
               </Form>

@@ -170,7 +170,7 @@ class ExportClearanceAction extends Component {
                     <div>{verifyMsg}</div>
                   }
                 </Form.Field>
-                <Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Verify</Button>
+                {/*<Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Verify</Button>*/}
                 <Message error header="Oops!" content={this.state.errorMessage} />
                 {statusMessage}
               </Form>

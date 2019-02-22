@@ -190,7 +190,7 @@ class Home extends Component {
                     <Header as='h4'>
                       <Header.Content>
                         Deployed By
-                      <Header.Subheader>Instance Shipper</Header.Subheader>
+                      <Header.Subheader>(Shipper)</Header.Subheader>
                       </Header.Content>
                     </Header>
                   </Table.Cell>

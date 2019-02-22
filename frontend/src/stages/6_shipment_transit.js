@@ -50,7 +50,7 @@ class ShipmentTransit extends Component {
         <h3>Add Drayage Agent Address</h3>
         <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>
           <Form.Field>
-            <Input onChange={event => this.setState({ drayageAgent: event.target.value })} placeholder='ETH Address <string>' />
+            <Input onChange={event => this.setState({ drayageAgent: event.target.value })} placeholder='Enter ETH Address' />
           </Form.Field>
           <Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Add</Button>
           <Message error header="Oops!" content={this.state.errorMessage} />

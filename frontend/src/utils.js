@@ -9,6 +9,20 @@ const {
 } = require("@azure/storage-file");
 
 
+export function calDateTime(unixDate) {
+  var date = new Date(unixDate * 1000);
+  var year = date.getFullYear();
+  var month = "0" + (date.getMonth() + 1);
+  var day = date.getDate();
+  var hour = date.getHours();
+  var min = date.getMinutes();
+  var sec = date.getSeconds();
+  var formattedDate = month.substr(-2) + '/' + day + '/' + year;
+  var formattedTime = hour + ":" + min + ":" + sec;
+  return [formattedDate, formattedTime];
+}
+
+
 export async function azureUpload(fileName) {
   const account = "uploadcustomsfiles";
   const accountSas = config.accountSAS;
@@ -51,16 +65,16 @@ export function azureDownload(fileName) {
 
 
 export const stateLabel = {
-  '0': "Begin Trade",
-  '1': "Export Clearance",
-  '2': "Shipment Initiation",
-  '3': "Shipment Boarding",
-  '4': "Transfer Bill of Lading",
-  '5': "Shipment In Transit",
-  '6': "Import Clearance",
-  '7': "Recover Shipment",
-  '8': "Shipment Delivery",
-  '9': "Shipment Finalize",
-  '10': "Shipment Complete",
-  '11': "Terminated",
+  '0': ["Begin Trade", "Shipper"],
+  '1': ["Export Clearance", "Origin Customs"],
+  '2': ["Shipment Initiation", "Shipper"],
+  '3': ["Shipment Boarding", "Freight Carrier"],
+  '4': ["Transfer Bill of Lading", "Freight Carrier"],
+  '5': ["Shipment In Transit", "Destination Customs Broker"],
+  '6': ["Import Clearance", "Destination Customs"],
+  '7': ["Recover Shipment", "Destination Customs Broker"],
+  '8': ["Shipment Delivery", "Drayage Agent"],
+  '9': ["Shipment Finalize", "Consignee"],
+  '10': ["Shipment Complete", ""],
+  '11': ["Terminated", ""],
 }

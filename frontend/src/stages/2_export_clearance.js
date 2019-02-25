@@ -111,7 +111,7 @@ class ExportClearanceAction extends Component {
     if (this.state.msg === '' && this.state.errorMessage === '') {
       statusMessage = null;
     } else if (this.state.msg) {
-      statusMessage = <Message floating positive header="Success!" content={this.state.msg} />;
+      statusMessage = <Message floating positive header={this.state.msg} />;
     } else if (this.state.errorMessage) {
       statusMessage = <Message floating negative header="Oops!" content={this.state.errorMessage} />;
     }
@@ -170,7 +170,7 @@ class ExportClearanceAction extends Component {
                     <div>{verifyMsg}</div>
                   }
                 </Form.Field>
-                <Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Verify</Button>
+                {/*<Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Verify</Button>*/}
                 <Message error header="Oops!" content={this.state.errorMessage} />
                 {statusMessage}
               </Form>

@@ -119,7 +119,7 @@ class RecoverOrder extends Component {
     if (this.state.msg === '') {
       statusMessage = null;
     } else {
-      statusMessage = <Message floating positive header="Success!" content={this.state.msg} />;
+      statusMessage = <Message floating positive header={this.state.msg} />;
     }
 
     return (

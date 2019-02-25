@@ -43,7 +43,7 @@ class TansferLading extends Component {
     if (this.state.msg === '') {
       statusMessage = null;
     } else {
-      statusMessage = <Message floating positive header="Success!" content={this.state.msg} />;
+      statusMessage = <Message floating positive header={this.state.msg} />;
     }
 
     return (
@@ -52,11 +52,11 @@ class TansferLading extends Component {
         <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>
           <Form.Field>
             <label>Destination Customs Broker</label>
-            <Input onChange={event => this.setState({ destinationCustomsBroker: event.target.value })} placeholder='ETH Address <string>' />
+            <Input onChange={event => this.setState({ destinationCustomsBroker: event.target.value })} placeholder='Enter ETH Address' />
           </Form.Field>
           <Form.Field>
             <label>Destination Customs</label>
-            <Input onChange={event => this.setState({ destinationCustoms: event.target.value })} placeholder='ETH Address <string>' />
+            <Input onChange={event => this.setState({ destinationCustoms: event.target.value })} placeholder='Enter ETH Address' />
           </Form.Field>
           <Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Add</Button>
           <Message error header="Oops!" content={this.state.errorMessage} />

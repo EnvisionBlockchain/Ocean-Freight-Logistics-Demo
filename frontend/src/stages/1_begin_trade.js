@@ -103,7 +103,7 @@ class SendForExportClearance extends Component {
     if (this.state.msg === '' && this.state.errorMessage === '') {
       statusMessage = null;
     } else {
-      statusMessage = <Message floating positive header="Success!" content={this.state.msg} />;
+      statusMessage = <Message floating positive header={this.state.msg} />;
     }
 
     return (
@@ -111,7 +111,7 @@ class SendForExportClearance extends Component {
         <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>
           <Form.Field>
             <label>Seller</label>
-            <Input onChange={event => this.setState({ seller: event.target.value })} placeholder='<string>' />
+            <Input onChange={event => this.setState({ seller: event.target.value })} placeholder="Enter Seller's Name" />
           </Form.Field>
           <Form.Field>
             <label>Port Of Discharge</label>

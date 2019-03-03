@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import AuthenticationContext from 'adal-angular';
 import { Redirect } from 'react-router-dom';
 import api from '../../helpers/Api.js';
+import Header from '../Header.js';
 
 
 //Set up adal
@@ -11,7 +12,7 @@ var config ={
 
 var context={
   token : "#$G",
-  data : ""
+  data : "NOT CHANGED"
 }
 
 class Dashboard extends Component {
@@ -34,23 +35,25 @@ class Dashboard extends Component {
           that.context.token=accessToken;
         }
         else{
-          that.setToken(err);
+          that.context.token=err;
         }
       });
     }
 
     //pull data from Api
-    api.run('GET', '/api/v2/users/me', this.context.token, function(err, data){
+    api.run('GET', '/api/v2/users/me', that.context.token, function(err, data){
       if(!err){
         that.context.data=data;
       }
       else{
+        console.log("err in dashboard= " + err);
         that.context.data=err;
       }
     });
 
     return(
       <div>
+        <Header />
         <center>
           <h1>Welcome to the dasboard</h1>
           <h4>{that.context.data}</h4>

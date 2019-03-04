@@ -6,7 +6,7 @@ FROM ubuntu:18.04
 RUN apt-get -yqq update
 #RUN apt-get -yqq upgrade
 RUN apt-get -yqq install build-essential curl gnupg git gcc
-RUN curl -sL https://deb.nodesource.com/setup_8.x | bash
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash
 RUN apt-get install -yq nodejs
 
 # copy our application code

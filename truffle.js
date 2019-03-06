@@ -10,6 +10,7 @@ module.exports = {
       port: 8545,
       network_id: "*" // Match any network id
     },
+    
     poa: {
       provider: new HDWalletProvider(mnemonic, rpc_endpoint),
       network_id: 3,

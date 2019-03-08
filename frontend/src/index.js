@@ -4,8 +4,8 @@ import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 import { Route, Link, BrowserRouter as Router } from 'react-router-dom'
-import Workbench from './components/workbench/login.js';
-import Dashboard from './components/workbench/Dashboard.js';
+import Workbench from '/workbench/login.js';
+import Dashboard from '/workbench/Dashboard.js';
 
 
 

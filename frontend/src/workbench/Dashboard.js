@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import AuthenticationContext from 'adal-angular';
 import { Redirect } from 'react-router-dom';
-import api from '../../helpers/Api.js';
-import Header from '../Header.js';
+import api from '../helpers/Api.js';
+import Header from '../components/Header.js';
 
 
 //Set up adal

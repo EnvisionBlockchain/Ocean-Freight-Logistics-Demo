@@ -6,7 +6,9 @@ run-interactive:
 
 copy-code:
 	@echo
-	@echo "\e[1;7mRun: make copy-code DIR=\"/path/to/dir\""
+	@echo "\e[1;7mMake sure to run 'make run-interactive' in another terminal first"
+	@echo
+	@echo "Run: make copy-code DIR=\"./path/to/dir\""
 	@echo "Eg: make copy-code DIR=\"./temp\"\e[0m"
 	@echo
 	docker cp -a ui-project-container:/opt/frontend $(DIR)

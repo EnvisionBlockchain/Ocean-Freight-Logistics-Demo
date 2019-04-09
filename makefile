@@ -11,7 +11,7 @@ copy-code:
 	@echo "Run: make copy-code DIR=\"./path/to/dir\""
 	@echo "Eg: make copy-code DIR=\"./temp\"\e[0m"
 	@echo
-	docker cp -a ui-project-container:/opt/frontend $(DIR)
+	docker cp -a ui-project-container:/frontend $(DIR)
 
 build-docker:
-	docker build -t pyoey/ui-project
+	docker build -t pyoey/ui-project .

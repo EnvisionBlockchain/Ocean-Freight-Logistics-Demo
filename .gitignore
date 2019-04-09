@@ -22,11 +22,8 @@ yarn-error.log*
 
 build/
 frontend/src/config.js
-<<<<<<< HEAD
-frontend/build
-=======
 frontend/build
 
 todo.txt
 imp_details.txt
->>>>>>> 2d4845c1d083a76c11220d4f7539bbc56a9edb2e
+*.backup

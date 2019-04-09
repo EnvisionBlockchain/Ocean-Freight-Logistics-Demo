@@ -1,24 +1,30 @@
-# Base Image
-FROM ubuntu:18.04
-# LABEL maintainer="vutsalsinghal@gmail.com"
+FROM node:10-alpine AS build
 
-# Update and upgrade and install node
-RUN apt-get -yqq update
-#RUN apt-get -yqq upgrade
-RUN apt-get -yqq install build-essential curl gnupg git gcc
-RUN curl -sL https://deb.nodesource.com/setup_10.x | bash
-RUN apt-get install -yq nodejs
+RUN apk add --update \
+    bash \
+    python \
+    make \
+    g++ \
+    git \
+    gnupg \
+    rm -rf /var/cache/apk/*
 
-# copy our application code
-ADD frontend /opt/frontend
-WORKDIR /opt/frontend
+WORKDIR /mnt
 
-# fetch app specific dependencies
+ADD frontend/package.json .
+ADD frontend/public ./public
+ADD frontend/src/ ./src
+
 RUN npm install
-RUN npm run build
 
-# tell the port number the container should expose
-EXPOSE 5000
+FROM node:10-alpine
 
-# run the command
-CMD ["npm", "run", "start"]
+RUN apk add --update --no-cache bash nano
+WORKDIR /mnt
+
+COPY --from=build /mnt/package.json .
+COPY --from=build /mnt/public ./public
+COPY --from=build /mnt/node_modules ./node_modules
+COPY --from=build /mnt/src/ ./src
+
+CMD ["npm", "start"]

@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import AuthenticationContext from 'adal-angular';
 import { Redirect } from 'react-router-dom';
-import api from '../helpers/Api.js';
-import Header from '../components/Header.js';
+import api from './helpers/Api.js';
+import Header from './components/Header.js';
 
 
 //Set up adal
@@ -12,8 +12,8 @@ var config ={
 
 var context={
   token : "#$G",
-  data : "NOT CHANGED"
-}
+  user : {'test':"test"}
+};
 
 class Dashboard extends Component {
   render(){
@@ -32,38 +32,40 @@ class Dashboard extends Component {
       authContext.acquireToken(config.clientId, function(err, accessToken){
         if(!err){
           //this.setToken(accessToken);
-          that.context.token=accessToken;
+          //that.context.token=accessToken;
+          //that.context['token']=accessToken;
+          context.token=accessToken;
         }
         else{
-          that.context.token=err;
+          context.token=err;
         }
       });
     }
 
     //pull data from Api
-    api.run('GET', '/api/v2/users/me', that.context.token, function(err, data){
+    api.run('GET', '/api/v2/users/me', context.token, function(err, data){
       if(!err){
-        that.context.data=data;
+        context.user=JSON.parse(data);
+        console.log(context.user.currentUser);
       }
       else{
-        console.log("err in dashboard= " + err);
-        that.context.data=err;
+        context.user=err;
       }
     });
 
+    console.log(context.user);
     return(
       <div>
         <Header />
         <center>
-          <h1>Welcome to the dasboard</h1>
-          <h4>{that.context.data}</h4>
+          <h1>Welcome to the dashboard</h1>
+          <h4>{context.user.test}</h4>
         </center>
       </div>
     );
   }
 
   setToken(newToken){
-    console.log("assign token");
     this.context.token=newToken
   }
 }

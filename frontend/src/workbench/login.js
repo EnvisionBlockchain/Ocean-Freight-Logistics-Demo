@@ -5,10 +5,10 @@ import AuthenticationContext from 'adal-angular';
 
 
 //Set up adal
-var config ={
-    clientId: '134a2a3a-6224-4584-93f6-b1f38ce5fbdc',
-};
 
+var config ={
+  clientId: '134a2a3a-6224-4584-93f6-b1f38ce5fbdc',
+};
 class Workbench extends Component {
   render() {
     //create authentication Context and check cached users

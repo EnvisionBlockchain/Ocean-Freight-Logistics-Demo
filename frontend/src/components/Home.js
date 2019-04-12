@@ -5,7 +5,7 @@ import {Loader, Dimmer} from 'semantic-ui-react';
 class Home extends Component {
     state = {
     loadingData:false,
-  }
+  };
 
   async componentDidMount(){
     this.setState({loadingData:true});

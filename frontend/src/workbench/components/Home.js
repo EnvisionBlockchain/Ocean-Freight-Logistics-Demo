@@ -21,34 +21,39 @@ class Home extends Component {
     account: '',
     SupplyChainInstance: '',  //factory page has several contracts, contract needs to be fetched with instance, binary code and address
     contractState: '',        //11 stages
-    instanceShipper: '',      //address of isntance shipper
+    instanceShipper: '',      //address of instance shipper
     instanceOriginCustoms: '', //address of origin customs
     metaData: { _lastAction: [] }, //contract variables
     allAddress: [],    //all of the addresses associated with the contract
   };
 
   async componentDidMount() {
-  //   this.setState({ loadingData: true });
-  //   document.title = "Azure UI";
-  //
-  //   //const accounts = await web3.eth.getAccounts();
-  //   const SupplyChainInstance = await supplychain_instance(this.props.match.params.chainAddress);
-  //   let metaData = this.props.location.state.metaData;
-  //   this.setState({ metaData });
-  //   metaData = await SupplyChainInstance.methods.getMetaData().call();
-  //
-  //   let instanceShipper = this.props.location.state.InstanceShipper;
-  //   let allAddress = await SupplyChainInstance.methods.getAllAddress().call();
-  //   //let { instanceOriginCustoms, instanceFreightCarrier, instanceDestinationCustoms, instanceDestinationCustomsBroker, instanceDrayageAgent, instanceConsignee } = Object.values(allAddress);
-  //
-  //   this.setState({ loadingData: false, account: accounts[0], allAddress, SupplyChainInstance, metaData, contractState: metaData._State, instanceShipper });
+    console.log(this.props.location.state.account);
+    this.setState({ loadingData: true });
+    document.title = "Azure UI";
+
+    let SupplyChainInstance=this.props.match.params.id;
+
+    let data=this.props.location.state.data;
+    this.setState({
+      loadingData:false,
+      SupplyChainInstance,
+      contractState:data.contractProperties[0].value,
+      lastAction: this.props.location.state.lastAction,
+
+      //TODO:confirm deployed by userid and instance shipper are equal
+      instanceShipper:data.deployedByUserId
+
+    })
+    //this.setState({ loadingData: false, account: accounts[0], allAddress, SupplyChainInstance, metaData, contractState: metaData._State, instanceShipper });
   }
 
   renderStatus = () => {
-    let arr = this.state.metaData._lastAction;
+    let arr = this.props.location.state.data.contractActions;
     let arrLen = arr.length;
     let items = arr.map((action, id) => {
-      let dateTime = calDateTime(action);
+      console.log(action, id);
+    let dateTime = calDateTime(Date.parse(action.timestamp)/1000);
 
       if (arrLen !== id + 1) {
         return (
@@ -110,10 +115,11 @@ class Home extends Component {
         <Table.Body>{items}</Table.Body>
       </Table>
     );
-  }
+  };
 
   render() {
-    const { contractState, metaData, account } = this.state;
+    const { account } = this.state;
+    const { contractState} = this.state;
     if (this.state.loadingData || typeof stateLabel[contractState] === "undefined") {
       return (
         <Dimmer active inverted>
@@ -121,11 +127,10 @@ class Home extends Component {
         </Dimmer>
       );
     }
-
-    let dateTime = calDateTime(metaData._lastAction[0]);
+    let dateTime = calDateTime(Date.parse(this.props.location.state.data.timestamp)/1000);
     return (
       <div>
-        <h1>Supplychain Transportation #{this.props.location.state.contractNo + 1}</h1>
+        <h1>Supplychain Transportation #{this.props.location.state.data.id + 1}</h1>
         <h3>Contract State:<span style={{ "color": "red" }}> {stateLabel[contractState][0]}</span></h3>
 
         <Grid stackable reversed="mobile">
@@ -145,11 +150,11 @@ class Home extends Component {
                   <Table.Cell>
                     <Header as='h4'>
                       <Header.Content>
-                        Contract Address
+                        Contract ID
                       </Header.Content>
                     </Header>
                   </Table.Cell>
-                  <Table.Cell>{this.props.match.params.chainAddress}</Table.Cell>
+                  <Table.Cell>{this.props.location.state.data.id}</Table.Cell>
                 </Table.Row>
 
                 <Table.Row>
@@ -160,7 +165,8 @@ class Home extends Component {
                       </Header.Content>
                     </Header>
                   </Table.Cell>
-                  <Table.Cell>{this.props.location.state.contractNo + 1}</Table.Cell>
+                  {/*make sure ledgerIdentifier and Contract # are equal*/}
+                  <Table.Cell>{this.props.location.state.data.ledgerIdentifier}</Table.Cell>
                 </Table.Row>
 
                 <Table.Row>
@@ -182,7 +188,7 @@ class Home extends Component {
                       </Header.Content>
                     </Header>
                   </Table.Cell>
-                  <Table.Cell>{this.props.location.state.metaData._Description}</Table.Cell>
+                  <Table.Cell>{this.props.location.state.data.contractProperties[1].value}</Table.Cell>
                 </Table.Row>
 
                 <Table.Row>
@@ -194,7 +200,7 @@ class Home extends Component {
                       </Header.Content>
                     </Header>
                   </Table.Cell>
-                  <Table.Cell>{this.props.location.state.InstanceShipper}</Table.Cell>
+                  <Table.Cell>{this.props.location.state.data.contractProperties[2].value}</Table.Cell>
                 </Table.Row>
 
                 <Table.Row>
@@ -205,7 +211,7 @@ class Home extends Component {
                       </Header.Content>
                     </Header>
                   </Table.Cell>
-                  <Table.Cell>{this.state.allAddress[1]}</Table.Cell>
+                  <Table.Cell>{this.props.location.state.data.contractProperties[3].value}</Table.Cell>
                 </Table.Row>
 
                 <Table.Row>
@@ -216,7 +222,7 @@ class Home extends Component {
                       </Header.Content>
                     </Header>
                   </Table.Cell>
-                  <Table.Cell>{this.state.allAddress[0]}</Table.Cell>
+                  <Table.Cell>{this.props.location.state.data.contractProperties[4].value}</Table.Cell>
                 </Table.Row>
               </Table.Body>
             </Table>
@@ -225,49 +231,49 @@ class Home extends Component {
           {this.renderStatus()}
         </Grid>
 
-        <h3>Pending Action: </h3>
+         <h3>Pending Action: </h3>
         {this.state.instanceShipper === account && contractState === '0' &&
-          <SendForExportClearance account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
+        <SendForExportClearance account={account} SupplyChainInstance={this.state.SupplyChainInstance}/>
         }
 
         {this.state.allAddress[0] === account && contractState === '1' &&
-          <ExportClearanceAction account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
+        <ExportClearanceAction account={account} SupplyChainInstance={this.state.SupplyChainInstance}/>
         }
 
-        {this.state.instanceShipper === account && contractState === '2' &&
-          <InitiateShipment account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
-        }
+         {this.state.instanceShipper === account && contractState === '2' &&
+           <InitiateShipment account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
+         }
 
-        {this.state.allAddress[1] === account && contractState === '3' &&
-          <BoardingShipment account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
-        }
+         {this.state.allAddress[1] === account && contractState === '3' &&
+           <BoardingShipment account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
+         }
 
-        {this.state.allAddress[1] === account && contractState === '4' &&
-          <TransferLading account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
-        }
+         {this.state.allAddress[1] === account && contractState === '4' &&
+           <TransferLading account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
+         }
 
-        {this.state.allAddress[3] === account && contractState === '5' &&
-          <ShipmentTransit account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
-        }
+         {this.state.allAddress[3] === account && contractState === '5' &&
+           <ShipmentTransit account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
+         }
 
-        {this.state.allAddress[2] === account && contractState === '6' &&
-          <ImportClearance account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
-        }
+         {this.state.allAddress[2] === account && contractState === '6' &&
+           <ImportClearance account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
+         }
 
-        {this.state.allAddress[3] === account && contractState === '7' &&
-          <RecoverOrder account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
-        }
+         {this.state.allAddress[3] === account && contractState === '7' &&
+           <RecoverOrder account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
+         }
 
-        {this.state.allAddress[4] === account && contractState === '8' &&
-          <DeliveryOrder account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
-        }
+         {this.state.allAddress[4] === account && contractState === '8' &&
+           <DeliveryOrder account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
+         }
 
-        {this.state.allAddress[5] === account && contractState === '9' &&
-          <ApproveDelivery account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
-        }
+         {this.state.allAddress[5] === account && contractState === '9' &&
+           <ApproveDelivery account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
+         }
 
-        <br /><br />
-      </div>
+         <br /><br />
+       </div>
     );
   }
 }

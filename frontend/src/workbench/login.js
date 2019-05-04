@@ -15,7 +15,7 @@ class Workbench extends Component {
     var authContext = new AuthenticationContext(config);
     authContext.handleWindowCallback();
 
-    //authContext.isCallback("tessdfgt");
+    //user.isCallback("tessdfgt");
     return (
       <div className="App">
         <center>

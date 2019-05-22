@@ -21,7 +21,11 @@ class Factory extends Component {
     deployedChains: [],
     currentPage: 1,
     chainsPerPage: 4,
+<<<<<<< HEAD
   };
+=======
+  }
+>>>>>>> branch_steve_clone
 
   async componentDidMount() {
     this.setState({ loadingData: true });
@@ -105,11 +109,19 @@ class Factory extends Component {
                   <Button primary icon labelPosition="right" floated="right"><Icon name='right arrow' />Details</Button>
                 </Link>
               </div>) ||
+<<<<<<< HEAD
             <div>Stage: <span style={{ "color": "red" }}>Terminated</span></div>
             }
 
             {this.state.account === chainDets[2] &&
             <Button loading={this.state.loading} disabled={this.state.loading} basic color='red' icon labelPosition="left" floated='right' onClick={() => this.deleteContract(chainDets[0])}><Icon name="warning sign" />Delete</Button>
+=======
+              <div>Stage: <span style={{ "color": "red" }}>Terminated</span></div>
+            }
+
+            {this.state.account === chainDets[2] &&
+              <Button loading={this.state.loading} disabled={this.state.loading} basic color='red' icon labelPosition="left" floated='right' onClick={() => this.deleteContract(chainDets[0])}><Icon name="warning sign" />Delete</Button>
+>>>>>>> branch_steve_clone
             }
           </Card.Content>
         </Card>

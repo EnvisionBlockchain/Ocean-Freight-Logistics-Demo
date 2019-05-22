@@ -8,6 +8,9 @@ import Home1 from './workbench/components/Home';
 
 // import Factory2 from './components/Factory';
 // import Layout2 from './components/Home.js';
+// import Home from './components/Home';
+// import Layout from './components/Layout';
+// import HelloWorld from './components/HelloWorld';
 
 
 class App extends Component {
@@ -26,7 +29,6 @@ class App extends Component {
         </Layout>
 
       </BrowserRouter>
-      </div>
     );
   }
 }

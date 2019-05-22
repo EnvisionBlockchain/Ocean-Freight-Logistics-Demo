@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
-import { Loader, Dimmer, Form, Button, Input, Message } from 'semantic-ui-react';
+import { Loader, Dimmer, Form, Button, Message } from 'semantic-ui-react';
+import * as api from "../helpers/Api";
+import Dropdown from "semantic-ui-react/dist/commonjs/modules/Dropdown/Dropdown";
 
 class ShipmentTransit extends Component {
   state = {
@@ -7,7 +9,7 @@ class ShipmentTransit extends Component {
     errorMessage: '',
     loadingData: false,
     drayageAgent: '',
-  }
+  };
 
   async componentDidMount() {
     this.setState({ loadingData: true });
@@ -20,14 +22,19 @@ class ShipmentTransit extends Component {
     this.setState({ errorMessage: '', loading: true, msg: '' });
 
     try {
-      await this.props.SupplyChainInstance.methods.SendBillOfLadingToCustoms(this.state.drayageAgent).send({ from: this.props.account });
+      await api.shipment_transit(this.props.token, this.props.id, this.state.drayageAgent);
       this.setState({ msg: 'Successfully Added!' });
     } catch (err) {
       this.setState({ errorMessage: err.message });
     }
 
     this.setState({ loading: false });
-  }
+  };
+
+  handleDrayageAgentChange=(e, selectedOption) => {
+    console.log(selectedOption.value);
+    this.setState({drayageAgent:selectedOption.value});
+  };
 
   render() {
     if (this.state.loadingData) {
@@ -50,7 +57,12 @@ class ShipmentTransit extends Component {
         <h3>Add Drayage Agent Address</h3>
         <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>
           <Form.Field>
-            <Input onChange={event => this.setState({ drayageAgent: event.target.value })} placeholder='Enter ETH Address' />
+            <Dropdown
+              selection
+              value={this.state.drayageAgent}
+              options={this.props.users}
+              onChange={this.handleDrayageAgentChange}
+            />
           </Form.Field>
           <Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Add</Button>
           <Message error header="Oops!" content={this.state.errorMessage} />

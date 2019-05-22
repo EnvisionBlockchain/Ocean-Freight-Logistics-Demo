@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import { Loader, Dimmer, Form, Button, Input, Message, Progress } from 'semantic-ui-react';
 import SparkMD5 from 'spark-md5';
 import { azureUpload } from "../helpers/utils";
+import * as api from "../helpers/Api";
+import Dropdown from "semantic-ui-react/dist/commonjs/modules/Dropdown/Dropdown";
 
 const { uploadBrowserDataToAzureFile, Aborter } = require("@azure/storage-file");
 
@@ -19,7 +21,7 @@ class SendForExportClearance extends Component {
     cDocsHash: '',
     cfDocsProgress: 0,
     cDocsProgress: 0
-  }
+  };
 
   async componentDidMount() {
     this.setState({ loadingData: true });
@@ -32,16 +34,21 @@ class SendForExportClearance extends Component {
     this.setState({ errorMessage: '', loading: true, msg: '' });
 
     try {
-      await this.props.SupplyChainInstance.methods.ExportClearance(this.state.seller, this.state.pod, this.state.bank, this.state.cfDocsHash, this.state.cDocsHash).send({ from: this.props.account });
-      await this.uploadFileToAzure(this.state.cfDocs, "cfDocs", this.state.cfDocsHash);
-      await this.uploadFileToAzure(this.state.cDocs, "cDocs", this.state.cDocsHash);
+      await api.begin_trade(this.props.token, this.props.id, this.state.seller, this.state.pod, this.state.bank,
+                      this.state.cDocsHash, this.state.cfDocsHash);
+
+      // await this.uploadFileToAzure(this.state.cfDocs, "cfDocs", this.state.cfDocsHash);
+      // await this.uploadFileToAzure(this.state.cDocs, "cDocs", this.state.cDocsHash);
+      this.setState({ cfDocsProgress: 100 });
+      this.setState({ cDocsProgress: 100 });
+
       this.setState({ msg: 'Successfully uploaded!' });
     } catch (err) {
       this.setState({ errorMessage: err.message });
     }
 
     this.setState({ loading: false });
-  }
+  };
 
   uploadFileToAzure = async (file, docType, fileName) => {
     this.setState({ loading: true });
@@ -61,15 +68,15 @@ class SendForExportClearance extends Component {
     });
 
     this.setState({ loading: false });
-  }
+  };
 
   captureDocs = (file, docType) => {
     this.setState({ errorMessage: '', loading: true, msg: '' });
 
     if (typeof file !== 'undefined') {
       try {
-        let reader = new window.FileReader()
-        reader.readAsArrayBuffer(file)
+        let reader = new window.FileReader();
+        reader.readAsArrayBuffer(file);
         reader.onloadend = async () => {
           const buffer = Buffer.from(reader.result);
           var spark = new SparkMD5.ArrayBuffer();
@@ -88,7 +95,11 @@ class SendForExportClearance extends Component {
       this.setState({ errorMessage: 'No file selected!' });
     }
     this.setState({ loading: false });
-  }
+  };
+
+  handleSellerChange=(e, selectedOption) => {
+    this.setState({seller:selectedOption.value});
+  };
 
   render() {
     if (this.state.loadingData) {
@@ -111,7 +122,12 @@ class SendForExportClearance extends Component {
         <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>
           <Form.Field>
             <label>Seller</label>
-            <Input onChange={event => this.setState({ seller: event.target.value })} placeholder="Enter Seller's Name" />
+            <Dropdown
+              selection
+              value={this.state.seller}
+              options={this.props.users}
+              onChange={this.handleSellerChange}
+            />
           </Form.Field>
           <Form.Field>
             <label>Port Of Discharge</label>

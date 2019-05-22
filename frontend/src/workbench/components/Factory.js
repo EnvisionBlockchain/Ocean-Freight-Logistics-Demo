@@ -1,15 +1,16 @@
 /*
-  This class/component is used to render the main page of the application and set links for
-  each individual contract instance.
+  This class/component is used to render the main page of the application, the list of contracts
+  and set links for each individual contract instance.
 
   Author: Steve Flynn
- */
+*/
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { Loader, Dimmer, Message, Button, Card, Grid, Icon, Progress, Modal, Form, Input } from 'semantic-ui-react';
-import * as api from "../helpers/Api";
-import { stateLabel } from "../helpers/utils";
+import {getTime, stateLabel, timezone} from "../helpers/utils";
 import AdUser from "../helpers/users";
+import * as api from "../helpers/Api";
+import Dropdown from "semantic-ui-react/dist/commonjs/modules/Dropdown/Dropdown";
 
 class Factory extends Component {
   state = {
@@ -26,87 +27,107 @@ class Factory extends Component {
     currentPage: 1,
     chainsPerPage: 4,
     apiKey: "",
-    timezone: '-04:00',
-    user: null
+    user: null,
+    allUsers:null,
+    selectedOption:"asdf"
   };
 
-  componentDidMount() {
-    this.setState({ loadingData: true });
-    let that=this;
+  async componentDidMount() {
+    this.setState({loadingData: true});
     let deployedChainsAddr=[];
+    let currentAccount;
+    let allUsers;
+    let that=this;
 
     this.state.user = new AdUser();
-    this.state.apiKey=this.state.user.getToken();
-    if(this.state.apiKey === "ERROR"){console.log("Error in retrieving key");}
-
-
-    api.run("GET", "/api/v2/contracts?workflowId=1", this.state.apiKey,
-      function (err, _data) {
-        if (!err) {
-          //this.state.deployedChainsAddr = JSON.parse(_data).contracts;
-
-          deployedChainsAddr=JSON.parse(_data).contracts;
-
-          let last = that.state.chainsPerPage;
-          if (deployedChainsAddr.length < last) {
-            last = deployedChainsAddr.length;
-          }
-
-          let deployedChains=[];
-          for (var i = 0; i < last; i++) {
-            try {
-              deployedChains.push(deployedChainsAddr[i]);
-            } catch (e) {
-              //deployedChains.push([deployedChainsAddr[i], { _killed: true }, "0x0000", 0]);
-            }
-          }
-          that.setState({deployedChains:deployedChains, deployedChainsAddr:deployedChainsAddr});
-          api.run("GET", "/api/v2/users/me", that.state.apiKey,
-            function(err, _data2){
-              if(!err && _data2){
-                //console.log(JSON.parse(_data2).currentUser.emailAddress);
-                //TODO:make sure userChainMappings will always be 0
-                let account=JSON.parse(_data2).currentUser.userChainMappings[0].chainIdentifier;
-                console.log(account);
-                that.setState({ loadingData: false, account:account });
-              }
-            });
-        } else {
-          console.log(_data);
-      }
-      });
-  }
-
-  getTime(transaction){
-    if(transaction.id == "24"){
-      return Date.now();
+    this.state.apiKey = this.state.user.getToken();
+    if (this.state.apiKey === "ERROR") {
+      console.log("Error in retrieving key");
     }
 
-    let x=transaction.contractActions.length;
-    return transaction.contractActions[x-1].timestamp;
-}
+    currentAccount = await api.getUserData(this.state.apiKey);
+    allUsers=await api.getAllUsers(this.state.apiKey);
 
-getStage(transaction){
-  //TODO:transaction list is pulling data that contains a transaction with ID:24
-  //This is missing in the other app, figure this out
-  if(transaction.id == "24"){
-    return "11";
+    //deployedChainsAddr= await api.getAllContracts(this.state.apiKey);
+    this.getContracts().then(function(value){
+      deployedChainsAddr=value;
+      deployedChainsAddr=that.verifyAllContracts(deployedChainsAddr);
+
+      that.setState({deployedChains:that.setChains(deployedChainsAddr),
+        deployedChainsAddr:deployedChainsAddr,loadingData: false, account:currentAccount,
+        allUsers:that.createUserList(allUsers)});
+    });
+
   }
-  let x=transaction.contractProperties[0].value;
-  return x;
-}
 
-getSeller(transaction){
-  let x=transaction.contractProperties[9].value;
-  return x;
-}
+  async getContracts(){
+    let contracts=[];
+    let path="/api/v2/contracts?top=50";
+    let stop=false;
+
+    while(!stop){
+      let data=await api.getAllContracts(this.state.apiKey,path);
+      if(data.status === 204){stop=true; continue;}
+      contracts=contracts.concat(data.data.contracts);
+      path=data.data.nextLink;
+    }
+    return Promise.resolve(contracts);
+  }
+
+  createUserList(users){
+    let newList=[];
+    for(let i=0; i < users.length; i++){
+      newList.push({text:users[i].firstName + " " + users[i].lastName,
+                    value:users[i].userChainMappings[0].chainIdentifier});
+    }
+    return newList;
+  }
+
+  verifyAllContracts(contractList){
+    let retList=[];
+    for(let i=0; i < contractList.length; i++){
+      if(this.verifyContract(contractList[i])){
+        retList.push(contractList[i]);
+      }
+    }
+    return retList;
+  }
+
+  verifyContract(contract){
+    return (getTime(contract) && this.getStage(contract) &&
+      this.getDescription(contract));
+
+  }
+
+  setChains(deployedChainsAddr){
+    let last = this.state.chainsPerPage;
+    if (deployedChainsAddr.length < last) {
+      last = deployedChainsAddr.length;
+    }
+    let deployedChains=[];
+    for (let i = 0; i < last; i++) {
+      try {
+        deployedChains.push(deployedChainsAddr[i]);
+      } catch (e) {
+        //deployedChains.push([deployedChainsAddr[i], { _killed: true }, "0x0000", 0]);
+      }
+    }
+    return deployedChains;
+  }
+
+
+  getStage(transaction){
+    if(transaction.contractProperties.length === 0){
+      return false;
+    }
+    return transaction.contractProperties[0].value;
+  }
 
   getDescription(transaction){
-    if(transaction.id == "24"){
-      return "UNKOWN";
+    if(transaction.contractProperties.length === 0){
+      return false;
     }
-    let x=transaction.contractProperties[1].value;
-    return x;
+    return transaction.contractProperties[1].value;
   }
 
 
@@ -121,15 +142,11 @@ getSeller(transaction){
     let deployedChains = [];
     for (var i = first; i < last; i++) {
       try {
-        // const SupplyChainInstance = await supplychain_instance(deployedChainsAddr[i]);
-        // const InstanceShipper = await SupplyChainInstance.methods.InstanceShipper().call({ from: account });
-        // let metaData = awa it SupplyChainInstance.methods.getMetaData().call({ from: account });
         deployedChains.push(deployedChainsAddr[i]);
       } catch (e) {
         //deployedChains.push([deployedChainsAddr[i], { _killed: true }, "0x0000", 0]);
       }
     }
-
     this.setState({ deployedChains:deployedChains, loadingData: false });
   };
 
@@ -138,10 +155,12 @@ getSeller(transaction){
   };
 
   renderChains = () => {
-
     //chainDets is just the current object, id is the id of the current element
     let items = this.state.deployedChains.map((chainDets, id) => {
-      let oldDate = parseInt(Date.parse(this.getTime(chainDets) +  this.state.timezone), 10);
+      if(!this.verifyContract(chainDets)){
+        return;
+      }
+      let oldDate = parseInt(Date.parse(getTime(chainDets) +  this.state.timezone), 10);
       let newDate = parseInt(Date.now(),10);
       let difference = Math.abs(oldDate - newDate);
 
@@ -153,7 +172,6 @@ getSeller(transaction){
       let mnts = Math.floor(seconds / 60);
       seconds -= mnts * 60;
       let stage=this.getStage(chainDets);
-      console.log(chainDets, stage);
       return (
         <Card key={id} fluid style={{ overflowWrap: 'break-word' }}>
           <Card.Content>
@@ -168,8 +186,9 @@ getSeller(transaction){
                   pathname: `/UI-project/${chainDets.id}`,
                   state: {
                     data:chainDets,
-                    lastAction:this.getTime(chainDets) +  this.state.timezone,
-                    account:this.state.account
+                    account:this.state.account,
+                    token:this.state.apiKey,
+                    users:this.state.allUsers
                   }
                 }}>
                   <Button primary icon labelPosition="right" floated="right"><Icon name='right arrow' />Details</Button>
@@ -197,22 +216,20 @@ getSeller(transaction){
     this.getChains(indexOfFirstChain, indexOfLastChain);
     this.setState({ currentPage });
   };
-  //
-  // deleteContract = async (address) => {
-  //   this.setthis.state({ loading: true });
-  //   try {
-  //     const SupplyChainInstance = await supplychain_instance(address);
-  //     await SupplyChainInstance.methods.kill().send({ from: this.state.account });
-  //   } catch (e) {
-  //     this.setthis.state({ errorMessage: e.message });
-  //   }
-  //   this.setthis.state({ loading: false });
-  // }
-  //
+
+  deleteContract = async (address) => {
+    console.log("This feature is not applicable");
+  };
+
   onSubmit = async (event) => {
     event.preventDefault();
     this.setState({ errorMessage: '', loading: true, msg: '' });
 
+    console.log(this.state.freightCarrierAddress, this.state.description, this.state.originCustomsAddress,
+                this.state.consigneeAddress);
+
+    await api.createContract(this.state.apiKey, this.state.description, this.state.freightCarrierAddress,
+                             this.state.originCustomsAddress, this.state.consigneeAddress);
     // try {
     //   let { description, freightCarrierAddress, originCustomsAddress, consigneeAddress, account } = this.state;
     //   await FactoryInstance.methods.createSupplyChain(description, freightCarrierAddress, originCustomsAddress, consigneeAddress).send({ from: account });
@@ -221,16 +238,31 @@ getSeller(transaction){
     //   this.setState({ errorMessage: err.message });
     // }
     //
-    // this.setState({ loading: false });
+    this.setState({ loading: false });
   };
-  //
+
+  setValues(values){
+    console.log(values);
+  };
+
+  handleConsigneeChange=(e, selectedOption) => {
+    this.setState({consigneeAddress:selectedOption.value});
+  };
+
+  handleFreightChange=(e, selectedOption) => {
+    this.setState({ freightCarrierAddress:selectedOption.value});
+  };
+
+  handleCustomsChange=(e, selectedOption) => {
+    this.setState({ originCustomsAddress:selectedOption.value});
+  };
+
+
   render() {
     let last=this.state.chainsPerPage;
-    let retVal="";
     let statusMessage="";
     let that = this;
-    //TODO: separate the different versions of the app
-    //TODO: possible extract auth context stuff into a function
+
 
     if (this.state.deployedChainsAddr.length < last) {
       last = this.state.deployedChainsAddr.length;
@@ -238,7 +270,6 @@ getSeller(transaction){
     statusMessage=this.checkStatusMessage();
 
 
-    //TODO: extract function
     const pageNumbers=[];
     for (let i = 1; i <= Math.ceil(this.state.deployedChainsAddr.length / this.state.chainsPerPage); i++) {
       pageNumbers.push(i);
@@ -270,15 +301,33 @@ getSeller(transaction){
                   </Form.Field>
                   <Form.Field>
                     <label>Freight Carrier Address</label>
-                    <Input onChange={event => that.setState({ freightCarrierAddress: event.target.value })} />
+                    <Dropdown
+                      selection
+                      value={this.state.freightCarrierAddress}
+                      options={this.state.allUsers}
+                      onChange={this.handleFreightChange}
+                    />
                   </Form.Field>
+
                   <Form.Field>
                     <label>Origin Customs Address</label>
-                    <Input onChange={event => that.setState({ originCustomsAddress: event.target.value })} />
+                    <Dropdown
+                      selection
+                      value={this.state.originCustomsAddress}
+                      options={this.state.allUsers}
+                      onChange={this.handleCustomsChange}
+                    />
                   </Form.Field>
+
                   <Form.Field>
                     <label>Consignee Address</label>
-                    <Input onChange={event => that.setState({ consigneeAddress: event.target.value })} />
+                    <Dropdown
+                      selection
+                      value={this.state.consigneeAddress}
+                      options={this.state.allUsers}
+                      onChange={this.handleConsigneeChange}
+                    />
+                    {/*<Input  onChange={event => that.setState({ consigneeAddress: event.target.value })} />*/}
                   </Form.Field>
                   <Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Deploy</Button>
                   <Message error header="Oops!" content={this.state.errorMessage} />
@@ -316,7 +365,7 @@ getSeller(transaction){
     }
   }
     checkStatusMessage() {
-      let statusMessage; //TODO:change this to class scope
+      let statusMessage;
       if (this.state.msg === '') {
         statusMessage = null;
       } else {

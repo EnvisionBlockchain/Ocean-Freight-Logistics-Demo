@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
-import { Loader, Dimmer, Form, Button, Input, Message } from 'semantic-ui-react';
+import { Loader, Dimmer, Form, Button, Message } from 'semantic-ui-react';
+import * as api from "../helpers/Api";
+import Dropdown from "semantic-ui-react/dist/commonjs/modules/Dropdown/Dropdown";
 
 class TansferLading extends Component {
   state = {
@@ -8,7 +10,7 @@ class TansferLading extends Component {
     loadingData: false,
     destinationCustomsBroker: '',
     destinationCustoms: '',
-  }
+  };
 
   async componentDidMount() {
     this.setState({ loadingData: true });
@@ -21,14 +23,22 @@ class TansferLading extends Component {
     this.setState({ errorMessage: '', loading: true, msg: '' });
 
     try {
-      await this.props.SupplyChainInstance.methods.TransferBillOfLading(this.state.destinationCustomsBroker, this.state.destinationCustoms).send({ from: this.props.account });
+      await api.transfer_lading(this.props.token, this.props.id, this.state.destinationCustomsBroker,
+                                 this.state.destinationCustoms);
       this.setState({ msg: 'Successfully Added!' });
     } catch (err) {
       this.setState({ errorMessage: err.message });
     }
 
     this.setState({ loading: false });
-  }
+  };
+  handleCustomsBrokerChange=(e, selectedOption) => {
+    this.setState({destinationCustomsBroker:selectedOption.value});
+  };
+
+  handleDestinationCustomsChange=(e, selectedOption) => {
+    this.setState({destinationCustoms:selectedOption.value});
+  };
 
   render() {
     if (this.state.loadingData) {
@@ -52,11 +62,21 @@ class TansferLading extends Component {
         <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>
           <Form.Field>
             <label>Destination Customs Broker</label>
-            <Input onChange={event => this.setState({ destinationCustomsBroker: event.target.value })} placeholder='Enter ETH Address' />
+            <Dropdown
+              selection
+              value={this.state.consigneeAddress}
+              options={this.props.users}
+              onChange={this.handleCustomsBrokerChange}
+            />
           </Form.Field>
           <Form.Field>
             <label>Destination Customs</label>
-            <Input onChange={event => this.setState({ destinationCustoms: event.target.value })} placeholder='Enter ETH Address' />
+            <Dropdown
+              selection
+              value={this.state.consigneeAddress}
+              options={this.props.users}
+              onChange={this.handleDestinationCustomsChange}
+            />
           </Form.Field>
           <Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Add</Button>
           <Message error header="Oops!" content={this.state.errorMessage} />

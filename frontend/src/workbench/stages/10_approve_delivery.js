@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Loader, Dimmer, Button, Message, Card } from 'semantic-ui-react';
+import * as api from "../helpers/Api";
 
 class ApproveDelivery extends Component {
   state = {
@@ -7,7 +8,7 @@ class ApproveDelivery extends Component {
     errorMessage: '',
     loadingData: false,
     verified: false,
-  }
+  };
 
   async componentDidMount() {
     this.setState({ loadingData: true });
@@ -18,24 +19,24 @@ class ApproveDelivery extends Component {
   approveDelivery = async () => {
     this.setState({ msg: '', loading: true, errorMessage: '' });
     try {
-      await this.props.SupplyChainInstance.methods.ApproveDelivery().send({ from: this.props.account });
+      await api.approve_delivery(this.props.token, this.props.id);
       this.setState({ msg: 'Delivery Approved!' });
     } catch (err) {
       this.setState({ errorMessage: err.messsage });
     }
     this.setState({ loading: false });
-  }
+  };
 
   rejectDocuments = async () => {
     this.setState({ msg: '', loading: true, errorMessage: '' });
     try {
-      await this.props.SupplyChainInstance.methods.Terminate().send({ from: this.props.account });
+      await api.terminate(this.props.token, this.props.id);
       this.setState({ msg: 'Delivery Rejected!' });
     } catch (err) {
       this.setState({ errorMessage: err.messsage });
     }
     this.setState({ loading: false });
-  }
+  };
 
   render() {
     if (this.state.loadingData) {

@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Loader, Dimmer, Form, Button, Input, Message, Modal, Card } from 'semantic-ui-react';
 import SparkMD5 from 'spark-md5';
 import { azureDownload } from "../helpers/utils";
+import * as api from "../helpers/Api";
 
 class DeliveryOrder extends Component {
   state = {
@@ -12,16 +13,16 @@ class DeliveryOrder extends Component {
     deliveryOrderDocsHash: '',
     verifyHash: '',
     verified: false,
-  }
+  };
 
   async componentDidMount() {
     this.setState({ loadingData: true });
     document.title = "Azure UI";
 
-    const deliveryOrderDocsHash = await this.props.SupplyChainInstance.methods.DeliveryOrderDocument().call({ from: this.props.account });
-    this.setState({ deliveryOrderDocsHash });
 
-    this.downloadFileFromAzure(deliveryOrderDocsHash);
+    //this.setState({ deliveryOrderDocsHash });
+
+    //this.downloadFileFromAzure(deliveryOrderDocsHash);
 
     this.setState({ loadingData: false });
   }
@@ -33,14 +34,14 @@ class DeliveryOrder extends Component {
     this.setState({ deliveryOrderDocsURL: url });
 
     this.setState({ loading: false });
-  }
+  };
 
   onSubmit = async (event) => {
     event.preventDefault();
     this.setState({ errorMessage: '', loading: true, msg: '' });
 
     try {
-      await this.props.SupplyChainInstance.methods.SendDeliveryOrderForConsigneeSignature().send({ from: this.props.account });
+
 
       this.setState({ msg: 'Successfully Sent For Delivery!' });
     } catch (err) {
@@ -48,7 +49,7 @@ class DeliveryOrder extends Component {
     }
 
     this.setState({ loading: false });
-  }
+  };
 
   captureDocs = (file, docType) => {
     this.setState({ errorMessage: '', loading: true, msg: '' });
@@ -75,18 +76,18 @@ class DeliveryOrder extends Component {
       this.setState({ errorMessage: 'No file selected!' });
     }
     this.setState({ loading: false });
-  }
+  };
 
   sendDeliveryOrder = async () => {
     this.setState({ msg: '', loading: true, errorMessage: '' });
     try {
-      await this.props.SupplyChainInstance.methods.SendDeliveryOrderForConsigneeSignature().send({ from: this.props.account });
+      await api.delivery_shipment(this.props.token, this.props.id);
       this.setState({ msg: 'Delivery Order Sent Consignee Signature!' });
     } catch (err) {
       this.setState({ errorMessage: err.messsage });
     }
     this.setState({ loading: false });
-  }
+  };
 
   render() {
     if (this.state.loadingData) {

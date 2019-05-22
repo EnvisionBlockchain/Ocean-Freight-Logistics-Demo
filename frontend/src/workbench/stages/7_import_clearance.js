@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Loader, Dimmer, Form, Button, Input, Message, Modal, Progress } from 'semantic-ui-react';
 import SparkMD5 from 'spark-md5';
 import { azureDownload, azureUpload } from "../helpers/utils";
+import * as api from "../helpers/Api";
 
 const { uploadBrowserDataToAzureFile, Aborter } = require("@azure/storage-file");
 
@@ -19,18 +20,17 @@ class ImportClearance extends Component {
     laddingHash: '',
     verifyHash: '',
     verified: false,
-  }
+  };
 
   async componentDidMount() {
     this.setState({ loadingData: true });
     document.title = "Azure UI";
 
-    const shippingHash = await this.props.SupplyChainInstance.methods.ShippingDocuments().call({ from: this.props.account });
-    const laddingHash = await this.props.SupplyChainInstance.methods.DraftBillOfLadingDocument().call({ from: this.props.account });
-    this.setState({ shippingHash, laddingHash });
 
-    this.downloadFileFromAzure('shippingDocs', shippingHash);
-    this.downloadFileFromAzure('laddingDocs', laddingHash);
+    //this.setState({ shippingHash, laddingHash });
+
+    //this.downloadFileFromAzure('shippingDocs', shippingHash);
+    //this.downloadFileFromAzure('laddingDocs', laddingHash);
 
     this.setState({ loadingData: false });
   }
@@ -47,7 +47,7 @@ class ImportClearance extends Component {
     }
 
     this.setState({ loading: false });
-  }
+  };
 
   uploadFileToAzure = async (file, fileName) => {
     this.setState({ loading: true });
@@ -63,15 +63,14 @@ class ImportClearance extends Component {
     });
 
     this.setState({ loading: false });
-  }
+  };
 
   onSubmit = async (event) => {
     event.preventDefault();
     this.setState({ errorMessage: '', loading: true, msg: '' });
 
     try {
-      await this.props.SupplyChainInstance.methods.SendReleaseOrder(this.state.releaseOrderDocsHash).send({ from: this.props.account });
-      await this.uploadFileToAzure(this.state.releaseOrderDocs, this.state.releaseOrderDocsHash);
+      await api.import_clearance(this.props.token, this.props.id, 'submit', this.state.laddingHash);
 
       this.setState({ msg: 'Successfully Added!' });
     } catch (err) {
@@ -79,7 +78,7 @@ class ImportClearance extends Component {
     }
 
     this.setState({ loading: false });
-  }
+  };
 
   captureDocs = (file, docType) => {
     this.setState({ errorMessage: '', loading: true, msg: '' });
@@ -106,29 +105,29 @@ class ImportClearance extends Component {
       this.setState({ errorMessage: 'No file selected!' });
     }
     this.setState({ loading: false });
-  }
+  };
 
   amendDocuments = async () => {
     this.setState({ msg: '', loading: true, errorMessage: '' });
     try {
-      await this.props.SupplyChainInstance.methods.AmendImportDocuments().send({ from: this.props.account });
+      await api.import_clearance(this.props.token, this.props.id, 'amend', "");
       this.setState({ msg: 'Documents Amend Requested!' });
     } catch (err) {
       this.setState({ errorMessage: err.messsage });
     }
     this.setState({ loading: false });
-  }
+  };
 
   rejectDocuments = async () => {
     this.setState({ msg: '', loading: true, errorMessage: '' });
     try {
-      await this.props.SupplyChainInstance.methods.Terminate().send({ from: this.props.account });
+      await api.terminate(this.props.token, this.props.id);
       this.setState({ msg: 'Documents Rejected!' });
     } catch (err) {
       this.setState({ errorMessage: err.messsage });
     }
     this.setState({ loading: false });
-  }
+  };
 
   render() {
     if (this.state.loadingData) {

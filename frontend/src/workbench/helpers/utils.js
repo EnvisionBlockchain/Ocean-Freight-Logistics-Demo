@@ -1,5 +1,4 @@
 import config from "../../config";
-import 'adal-angular';
 
 const {
   AnonymousCredential,
@@ -10,6 +9,7 @@ const {
   StorageURL
 } = require("@azure/storage-file");
 
+export const timezone='-04:00';
 
 export function calDateTime(unixDate) {
   var date = new Date(unixDate * 1000);
@@ -26,7 +26,7 @@ export function calDateTime(unixDate) {
 
 
 export async function azureUpload(fileName) {
-  const account = "uploadcustomsfiles";
+  const account = "ohtlvuethpoasanboxwb";
   const accountSas = config.accountSAS;
 
   const pipeline = StorageURL.newPipeline(new AnonymousCredential(), {
@@ -34,7 +34,7 @@ export async function azureUpload(fileName) {
     telemetry: { value: "HighLevelSample V1.0.0" } // Customized telemetry string
   });
 
-  const serviceURL = new ServiceURL(`https://${account}.file.core.windows.net${accountSas}`, pipeline);
+  const serviceURL = new ServiceURL(`https://${account}.blob.core.windows.net${accountSas}`, pipeline);
   const shareName = "uploadfileshare";
   const shareURL = ShareURL.fromServiceURL(serviceURL, shareName);
 
@@ -81,6 +81,25 @@ export const stateLabel = {
   '11': ["Terminated", ""],
 };
 
+export const functionIdMap={
+  //index is function id
+  '1': stateLabel[0],
+  '6': stateLabel[0],
+  '9': stateLabel[1],
+  '3': stateLabel[2],
+  '10':stateLabel[3],
+  '7':stateLabel[3],
+  '11':stateLabel[4],
+  '12':stateLabel[5],
+  '8':stateLabel[5],
+  '13':stateLabel[6],
+  '14':stateLabel[7],
+  '15':stateLabel[8],
+  '4' :stateLabel[9],
+  '5' :stateLabel[10]
+
+};
+
 export function login(authContext){
     var user = authContext.getCachedUser();
     if (!user) {
@@ -89,10 +108,17 @@ export function login(authContext){
     else {
         //console.log(user);
     }
-    //TODO: make sure if the user is NOT currently logged in the user object still works
     return user;
 }
 
 export function getToken(authContext, resource){
   authContext.acquireToken()
+}
+
+export function getTime(transaction){
+  if(transaction.contractActions.length === 0){
+    return false;
+  }
+  let x=transaction.contractActions.length;
+  return transaction.contractActions[x-1].timestamp;
 }

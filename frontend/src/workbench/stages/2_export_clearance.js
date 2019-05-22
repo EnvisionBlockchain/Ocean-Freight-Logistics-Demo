@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Loader, Dimmer, Button, Message, Modal, Form, Input } from 'semantic-ui-react';
 import { azureDownload } from "../helpers/utils";
 import SparkMD5 from 'spark-md5';
+import * as api from "../helpers/Api";
 
 class ExportClearanceAction extends Component {
   state = {
@@ -12,17 +13,17 @@ class ExportClearanceAction extends Component {
     cfURL: '',
     verifyHash: '',
     verified: false,
-  }
+  };
 
   async componentDidMount() {
     this.setState({ loadingData: true });
     document.title = "Azure UI";
 
-    const cfDocsHash = await this.props.SupplyChainInstance.methods.ExportDocument().call({ from: this.props.account });
-    const cDocsHash = await this.props.SupplyChainInstance.methods.CustomsDocument().call({ from: this.props.account });
-    this.setState({ cfDocsHash, cDocsHash });
-    this.downloadFileFromAzure('cfDocs', cfDocsHash);
-    this.downloadFileFromAzure('cDocs', cDocsHash);
+    // const cfDocsHash = await this.props.SupplyChainInstance.methods.ExportDocument().call({ from: this.props.account });
+    // const cDocsHash = await this.props.SupplyChainInstance.methods.CustomsDocument().call({ from: this.props.account });
+    // this.setState({ cfDocsHash, cDocsHash });
+    // this.downloadFileFromAzure('cfDocs', cfDocsHash);
+    // this.downloadFileFromAzure('cDocs', cDocsHash);
 
     this.setState({ loadingData: false });
   }
@@ -63,40 +64,40 @@ class ExportClearanceAction extends Component {
     }
 
     this.setState({ loading: false });
-  }
+  };
 
   approveDocuments = async () => {
     this.setState({ msg: '', loading: true, errorMessage: '' });
     try {
-      await this.props.SupplyChainInstance.methods.ApproveExportDocumentation().send({ from: this.props.account });
+      await api.export_clearance('approve', this.props.id, this.props.token);
       this.setState({ msg: 'Documents Approved!' });
     } catch (err) {
       this.setState({ errorMessage: err.messsage });
     }
     this.setState({ loading: false });
-  }
+  };
 
   amendDocuments = async () => {
     this.setState({ msg: '', loading: true, errorMessage: '' });
     try {
-      await this.props.SupplyChainInstance.methods.AmendExportDocumentation().send({ from: this.props.account });
+      await api.export_clearance('amend', this.props.id, this.props.token);
       this.setState({ msg: 'Documents Amend Requested!' });
     } catch (err) {
       this.setState({ errorMessage: err.messsage });
     }
     this.setState({ loading: false });
-  }
+  };
 
   rejectDocuments = async () => {
     this.setState({ msg: '', loading: true, errorMessage: '' });
     try {
-      await this.props.SupplyChainInstance.methods.Terminate().send({ from: this.props.account });
+      await api.terminate(this.props.token, this.props.id);
       this.setState({ msg: 'Documents Rejected!' });
     } catch (err) {
       this.setState({ errorMessage: err.messsage });
     }
     this.setState({ loading: false });
-  }
+  };
 
   render() {
     if (this.state.loadingData) {

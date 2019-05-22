@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Loader, Dimmer, Form, Button, Input, Message, Progress } from 'semantic-ui-react';
 import SparkMD5 from 'spark-md5';
 import { azureUpload } from "../helpers/utils";
+import * as api from "../helpers/Api";
 const { uploadBrowserDataToAzureFile, Aborter } = require("@azure/storage-file");
 
 class InitiateShipment extends Component {
@@ -15,7 +16,7 @@ class InitiateShipment extends Component {
     ladingDocsHash: '',
     shippingDocsProgress: 0,
     ladingDocsProgress: 0,
-  }
+  };
 
   async componentDidMount() {
     this.setState({ loadingData: true });
@@ -28,9 +29,10 @@ class InitiateShipment extends Component {
     this.setState({ errorMessage: '', loading: true, msg: '' });
 
     try {
-      await this.props.SupplyChainInstance.methods.UploadShippingDocuments(this.state.shippingDocsHash, this.state.ladingDocsHash).send({ from: this.props.account });
-      await this.uploadFileToAzure(this.state.shippingDocs, 'shippingDocs', this.state.shippingDocsHash);
-      await this.uploadFileToAzure(this.state.shippingDocs, 'ladingDocs', this.state.shippingDocsHash);
+      api.shipment_initiation(this.props.token, this.props.id, this.state.shippingDocsHash, this.state.ladingDocsHash);
+      //await this.props.SupplyChainInstance.methods.UploadShippingDocuments(this.state.shippingDocsHash, this.state.ladingDocsHash).send({ from: this.props.account });
+      // await this.uploadFileToAzure(this.state.shippingDocs, 'shippingDocs', this.state.shippingDocsHash);
+      // await this.uploadFileToAzure(this.state.shippingDocs, 'ladingDocs', this.state.shippingDocsHash);
 
       this.setState({ msg: 'Successfully uploaded!' });
     } catch (err) {
@@ -38,7 +40,7 @@ class InitiateShipment extends Component {
     }
 
     this.setState({ loading: false });
-  }
+  };
 
   uploadFileToAzure = async (file, docType, fileName) => {
     this.setState({ loading: true });
@@ -58,7 +60,7 @@ class InitiateShipment extends Component {
     });
 
     this.setState({ loading: false });
-  }
+  };
 
   captureDocs = (file, docType) => {
     this.setState({ errorMessage: '', loading: true, msg: '' });
@@ -85,7 +87,7 @@ class InitiateShipment extends Component {
       this.setState({ errorMessage: 'No file selected!' });
     }
     this.setState({ loading: false });
-  }
+  };
 
   render() {
     if (this.state.loadingData) {

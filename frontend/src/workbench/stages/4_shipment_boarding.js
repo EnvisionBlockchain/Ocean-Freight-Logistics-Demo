@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Loader, Dimmer, Form, Button, Input, Message, Modal, Progress } from 'semantic-ui-react';
 import SparkMD5 from 'spark-md5';
 import { azureDownload, azureUpload } from "../helpers/utils";
+import * as api from "../helpers/Api";
 const { uploadBrowserDataToAzureFile, Aborter } = require("@azure/storage-file");
 
 class BoardingShipment extends Component {
@@ -18,18 +19,15 @@ class BoardingShipment extends Component {
     laddingHash: '',
     verifyHash: '',
     verified: false,
-  }
+  };
 
   async componentDidMount() {
     this.setState({ loadingData: true });
     document.title = "Azure UI";
 
-    const shippingHash = await this.props.SupplyChainInstance.methods.ShippingDocuments().call({ from: this.props.account });
-    const laddingHash = await this.props.SupplyChainInstance.methods.DraftBillOfLadingDocument().call({ from: this.props.account });
-    this.setState({ shippingHash, laddingHash });
 
-    this.downloadFileFromAzure('shippingDocs', shippingHash);
-    this.downloadFileFromAzure('laddingDocs', laddingHash);
+    // this.downloadFileFromAzure('shippingDocs', shippingHash);
+    // this.downloadFileFromAzure('laddingDocs', laddingHash);
 
     this.setState({ loadingData: false });
   }
@@ -39,15 +37,15 @@ class BoardingShipment extends Component {
     this.setState({ errorMessage: '', loading: true, msg: '' });
 
     try {
-      await this.props.SupplyChainInstance.methods.UploadFinalBillOfLading(this.state.boardingDocsHash).send({ from: this.props.account });
-      await this.uploadFileToAzure(this.state.boardingDocs, this.state.boardingDocsHash);
+
+      await api.shipment_boarding(this.props.token, 'submit', this.props.id, this.state.boardingDocsHash);
       this.setState({ msg: 'Successfully uploaded!' });
     } catch (err) {
       this.setState({ errorMessage: err.message });
     }
 
     this.setState({ loading: false });
-  }
+  };
 
   downloadFileFromAzure = async (docType, fileName) => {
     this.setState({ loading: true });
@@ -61,7 +59,7 @@ class BoardingShipment extends Component {
     }
 
     this.setState({ loading: false });
-  }
+  };
 
   uploadFileToAzure = async (file, fileName) => {
     this.setState({ loading: true });
@@ -77,7 +75,7 @@ class BoardingShipment extends Component {
     });
 
     this.setState({ loading: false });
-  }
+  };
 
   captureDocs = (file, docType) => {
     this.setState({ errorMessage: '', loading: true, msg: '' });
@@ -104,18 +102,18 @@ class BoardingShipment extends Component {
       this.setState({ errorMessage: 'No file selected!' });
     }
     this.setState({ loading: false });
-  }
+  };
 
   amendDocuments = async () => {
     this.setState({ msg: '', loading: true, errorMessage: '' });
     try {
-      await this.props.SupplyChainInstance.methods.AmendBillOfLading().send({ from: this.props.account });
+      await api.shipment_boarding(this.props.token, 'amend', this.props.id, "");
       this.setState({ msg: 'Documents Amend Requested!' });
     } catch (err) {
       this.setState({ errorMessage: err.messsage });
     }
     this.setState({ loading: false });
-  }
+  };
 
   render() {
     if (this.state.loadingData) {

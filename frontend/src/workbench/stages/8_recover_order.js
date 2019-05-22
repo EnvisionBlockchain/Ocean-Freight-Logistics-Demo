@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Loader, Dimmer, Form, Button, Input, Message, Modal, Progress } from 'semantic-ui-react';
 import SparkMD5 from 'spark-md5';
 import { azureDownload, azureUpload } from "../helpers/utils";
+import * as api from "../helpers/Api";
 
 const { uploadBrowserDataToAzureFile, Aborter } = require("@azure/storage-file");
 
@@ -17,16 +18,16 @@ class RecoverOrder extends Component {
     deliveryOrderDocsProgress: 0,
     verifyHash: '',
     verified: false,
-  }
+  };
 
   async componentDidMount() {
     this.setState({ loadingData: true });
     document.title = "Azure UI";
 
-    const releaseOrderDocsHash = await this.props.SupplyChainInstance.methods.ReleaseOrderDocument().call({ from: this.props.account });
-    this.setState({ releaseOrderDocsHash });
 
-    this.downloadFileFromAzure(releaseOrderDocsHash);
+    //this.setState({ releaseOrderDocsHash });
+
+    //this.downloadFileFromAzure(releaseOrderDocsHash);
 
     this.setState({ loadingData: false });
   }
@@ -38,7 +39,7 @@ class RecoverOrder extends Component {
     this.setState({ releaseOrderDocsURL: url });
 
     this.setState({ loading: false });
-  }
+  };
 
   uploadFileToAzure = async (file, fileName) => {
     this.setState({ loading: true });
@@ -54,31 +55,30 @@ class RecoverOrder extends Component {
     });
 
     this.setState({ loading: false });
-  }
+  };
 
   onSubmit = async (event) => {
     event.preventDefault();
     this.setState({ errorMessage: '', loading: true, msg: '' });
 
     try {
-      await this.props.SupplyChainInstance.methods.SendDeliveryOrder(this.state.deliveryOrderDocsHash).send({ from: this.props.account });
-      await this.uploadFileToAzure(this.state.deliveryOrderDocs, this.state.deliveryOrderDocsHash);
 
+      await api.recover_order(this.props.token, this.props.id, this.state.deliveryOrderDocsHash);
       this.setState({ msg: 'Successfully Added!' });
     } catch (err) {
       this.setState({ errorMessage: err.message });
     }
 
     this.setState({ loading: false });
-  }
+  };
 
   captureDocs = (file, docType) => {
     this.setState({ errorMessage: '', loading: true, msg: '' });
 
     if (typeof file !== 'undefined') {
       try {
-        let reader = new window.FileReader()
-        reader.readAsArrayBuffer(file)
+        let reader = new window.FileReader();
+        reader.readAsArrayBuffer(file);
         reader.onloadend = async () => {
           const buffer = Buffer.from(reader.result);
           var spark = new SparkMD5.ArrayBuffer();
@@ -97,7 +97,7 @@ class RecoverOrder extends Component {
       this.setState({ errorMessage: 'No file selected!' });
     }
     this.setState({ loading: false });
-  }
+  };
 
   render() {
     if (this.state.loadingData) {

@@ -16,7 +16,6 @@ import Home1 from './workbench/components/Home';
 class App extends Component {
     render() {
     return (
-      <div>
         <BrowserRouter>
         <Layout>
           <Switch>

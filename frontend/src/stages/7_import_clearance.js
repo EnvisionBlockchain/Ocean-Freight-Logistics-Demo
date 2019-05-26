@@ -23,7 +23,7 @@ class ImportClearance extends Component {
 
   async componentDidMount() {
     this.setState({ loadingData: true });
-    document.title = "Azure UI";
+    document.title = "Cargo Shipmemnt | Import Clearance";
 
     const shippingHash = await this.props.SupplyChainInstance.methods.ShippingDocuments().call({ from: this.props.account });
     const laddingHash = await this.props.SupplyChainInstance.methods.DraftBillOfLadingDocument().call({ from: this.props.account });
@@ -73,9 +73,9 @@ class ImportClearance extends Component {
       await this.props.SupplyChainInstance.methods.SendReleaseOrder(this.state.releaseOrderDocsHash).send({ from: this.props.account });
       await this.uploadFileToAzure(this.state.releaseOrderDocs, this.state.releaseOrderDocsHash);
 
-      this.setState({ msg: 'Successfully Added!' });
+      this.setState({ msg: 'Successfully Uploaded!', errorMessage: '' });
     } catch (err) {
-      this.setState({ errorMessage: err.message });
+      this.setState({ errorMessage: err.message, msg: '' });
     }
 
     this.setState({ loading: false });
@@ -103,7 +103,7 @@ class ImportClearance extends Component {
         console.log("error: ", err.message);
       }
     } else {
-      this.setState({ errorMessage: 'No file selected!' });
+      this.setState({ errorMessage: 'No file selected!', msg: '' });
     }
     this.setState({ loading: false });
   }
@@ -112,9 +112,9 @@ class ImportClearance extends Component {
     this.setState({ msg: '', loading: true, errorMessage: '' });
     try {
       await this.props.SupplyChainInstance.methods.AmendImportDocuments().send({ from: this.props.account });
-      this.setState({ msg: 'Documents Amend Requested!' });
+      this.setState({ msg: 'Documents Amend Requested!', errorMessage: '' });
     } catch (err) {
-      this.setState({ errorMessage: err.messsage });
+      this.setState({ errorMessage: err.messsage, msg: '' });
     }
     this.setState({ loading: false });
   }
@@ -123,9 +123,9 @@ class ImportClearance extends Component {
     this.setState({ msg: '', loading: true, errorMessage: '' });
     try {
       await this.props.SupplyChainInstance.methods.Terminate().send({ from: this.props.account });
-      this.setState({ msg: 'Documents Rejected!' });
+      this.setState({ msg: 'Documents Rejected!', errorMessage: '' });
     } catch (err) {
-      this.setState({ errorMessage: err.messsage });
+      this.setState({ errorMessage: err.messsage, msg: '' });
     }
     this.setState({ loading: false });
   }
@@ -155,8 +155,35 @@ class ImportClearance extends Component {
 
     return (
       <div>
+        <br /><br />
+        <Button.Group>
+          <a href={this.state.shippingURL} download={this.state.shippingURL}><Button primary>Download Shipping Docs</Button></a>
+          <Button.Or />
+          <a href={this.state.laddingURL} download={this.state.laddingURL}><Button primary>Download Bill of Ladding</Button></a>
+        </Button.Group>
+        <br /><br />
+        <Modal trigger={<Button primary basic>VERIFY</Button>}>
+          <Modal.Header>Verify The Downloaded Documents</Modal.Header>
+          <Modal.Content>
+            <Form error={!!this.state.errorMessage}>
+              <Form.Field>
+                <label>Choose either Shipping Docs or Bill of Ladding to verify</label>
+                <Input type='file' onChange={event => { this.captureDocs(event.target.files[0], "verify") }} />
+                {this.state.verified && verifyMsg !== '' &&
+                  <div><br />{verifyMsg}</div>
+                }
+              </Form.Field>
+              <Message error header="Oops!" content={this.state.errorMessage} />
+              {statusMessage}
+            </Form>
+          </Modal.Content>
+        </Modal>
+
+        <br /><br />
+
+        <h3>Pending Action: </h3>
         <Button.Group basic>
-          <Modal trigger={<Button basic color="red">Upload Release Docs</Button>}>
+          <Modal trigger={<Button basic color="green">UPLOAD</Button>}>
             <Modal.Header>Upload Release Order Document</Modal.Header>
             <Modal.Content>
               <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>
@@ -169,52 +196,36 @@ class ImportClearance extends Component {
                     </div>
                   }
                 </Form.Field>
-                <Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Submit</Button>
+                <Button
+                  loading={this.state.loading}
+                  disabled={this.state.loading}
+                  color='green'
+                  floated='right'
+                  labelPosition='right'
+                  icon='cloud upload'
+                  type='submit'
+                  content='UPLOAD' />
                 <Message error header="Oops!" content={this.state.errorMessage} />
-                {statusMessage}
+                <br /><br />{statusMessage}
               </Form>
             </Modal.Content>
           </Modal>
 
-          <Modal size={'mini'} trigger={<Button basic color="blue">Amend Docs</Button>}>
+          <Modal size={'mini'} trigger={<Button basic color="yellow">AMEND</Button>}>
             <Modal.Header>Send Document Amend Request</Modal.Header>
             <Modal.Content>
               Amend Documents?
-            <Button floated='right' color='yellow' loading={this.state.loading} primary basic onClick={this.amendDocuments}>Amend</Button>
-              {statusMessage}
+            <Button floated='right' color='yellow' loading={this.state.loading} onClick={this.amendDocuments}>AMEND</Button>
+              <br /><br />{statusMessage}
             </Modal.Content>
           </Modal>
 
-          <Modal size={'mini'} trigger={<Button basic color="blue">Reject Docs</Button>}>
+          <Modal size={'mini'} trigger={<Button basic color="red">REJECT</Button>}>
             <Modal.Header>Reject Export Clearance</Modal.Header>
             <Modal.Content>
               Reject Documents?
-            <Button floated='right' color='red' loading={this.state.loading} primary basic onClick={this.rejectDocuments}>Reject</Button>
-              {statusMessage}
-            </Modal.Content>
-          </Modal>
-        </Button.Group>
-        <br /><br />
-        <Button.Group>
-          <a href={this.state.shippingURL} download={this.state.shippingURL}><Button primary>Download Shipping Docs</Button></a>
-          <Button.Or />
-          <a href={this.state.laddingURL} download={this.state.laddingURL}><Button primary>Download Bill of Ladding</Button></a>
-          <Button.Or />
-          <Modal trigger={<Button primary>Verify Document</Button>}>
-            <Modal.Header>Verify The Downloaded Documents</Modal.Header>
-            <Modal.Content>
-              <Form error={!!this.state.errorMessage}>
-                <Form.Field>
-                  <label>Choose either Shipping Docs or Bill of Ladding</label>
-                  <Input type='file' onChange={event => { this.captureDocs(event.target.files[0], "verify") }} />
-                  {this.state.verified && verifyMsg !== '' &&
-                    <div>{verifyMsg}</div>
-                  }
-                </Form.Field>
-                <Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Verify</Button>
-                <Message error header="Oops!" content={this.state.errorMessage} />
-                {statusMessage}
-              </Form>
+            <Button floated='right' color='red' loading={this.state.loading} onClick={this.rejectDocuments}>REJECT</Button>
+              <br /><br />{statusMessage}
             </Modal.Content>
           </Modal>
         </Button.Group>

@@ -25,7 +25,7 @@ class Factory extends Component {
 
   async componentDidMount() {
     this.setState({ loadingData: true });
-    document.title = "Azure UI";
+    document.title = "Cargo Shipmemnt";
 
     const accounts = await web3.eth.getAccounts();
     let deployedChainsAddr = await FactoryInstance.methods.getDeployedSupplyChain().call({ from: accounts[0] });
@@ -95,7 +95,7 @@ class Factory extends Component {
                 <Card.Description>Stage: {parseInt(chainDets[1]._State, 10) + 1}/11 (<span style={{ "color": "red" }}>{stateLabel[chainDets[1]._State][0]}</span>)</Card.Description><br />
                 <Progress value={chainDets[1]._State} total='10' indicating />
                 <Link to={{
-                  pathname: `/UI-project/${chainDets[0]}`,
+                  pathname: `/${chainDets[0]}`,
                   state: {
                     metaData: chainDets[1],
                     InstanceShipper: chainDets[2],

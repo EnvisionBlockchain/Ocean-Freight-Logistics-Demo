@@ -23,7 +23,7 @@ class SendForExportClearance extends Component {
 
   async componentDidMount() {
     this.setState({ loadingData: true });
-    document.title = "Azure UI";
+    document.title = "Cargo Shipmemnt | Begin Trade";
     this.setState({ loadingData: false });
   }
 
@@ -35,9 +35,9 @@ class SendForExportClearance extends Component {
       await this.props.SupplyChainInstance.methods.ExportClearance(this.state.seller, this.state.pod, this.state.bank, this.state.cfDocsHash, this.state.cDocsHash).send({ from: this.props.account });
       await this.uploadFileToAzure(this.state.cfDocs, "cfDocs", this.state.cfDocsHash);
       await this.uploadFileToAzure(this.state.cDocs, "cDocs", this.state.cDocsHash);
-      this.setState({ msg: 'Successfully uploaded!' });
+      this.setState({ msg: 'Successfully uploaded!', errorMessage: '' });
     } catch (err) {
-      this.setState({ errorMessage: err.message });
+      this.setState({ errorMessage: err.message, msg: '' });
     }
 
     this.setState({ loading: false });
@@ -85,7 +85,7 @@ class SendForExportClearance extends Component {
         console.log("error: ", err.message);
       }
     } else {
-      this.setState({ errorMessage: 'No file selected!' });
+      this.setState({ errorMessage: 'No file selected!', msg: '' });
     }
     this.setState({ loading: false });
   }
@@ -108,6 +108,8 @@ class SendForExportClearance extends Component {
 
     return (
       <div>
+        <br /><br />
+        <h3>Pending Action: </h3>
         <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>
           <Form.Field>
             <label>Seller</label>
@@ -140,8 +142,8 @@ class SendForExportClearance extends Component {
                 <Progress percent={this.state.cDocsProgress} indicating progress='percent' />
               </div>
             }
-          </Form.Field>
-          <Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Begin</Button>
+          </Form.Field><br />
+          <Button loading={this.state.loading} disabled={this.state.loading} color='green' type='submit'>BEGIN</Button>
           <Message error header="Oops!" content={this.state.errorMessage} />
           {statusMessage}
         </Form>

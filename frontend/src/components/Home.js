@@ -29,7 +29,7 @@ class Home extends Component {
 
   async componentDidMount() {
     this.setState({ loadingData: true });
-    document.title = "Azure UI";
+    document.title = "Cargo Shipmemnt";
 
     const accounts = await web3.eth.getAccounts();
     const SupplyChainInstance = await supplychain_instance(this.props.match.params.chainAddress);
@@ -225,7 +225,6 @@ class Home extends Component {
           {this.renderStatus()}
         </Grid>
 
-        <h3>Pending Action: </h3>
         {this.state.instanceShipper === account && contractState === '0' &&
           <SendForExportClearance account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
         }

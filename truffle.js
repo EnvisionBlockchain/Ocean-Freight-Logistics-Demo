@@ -5,16 +5,15 @@ var mnemonic = "candy clip enlist runway inquiry wood cable flush board matrix r
 
 module.exports = {
   networks: {
-    development: {
-      host: "localhost",
-      port: 8545,
-      network_id: "*" // Match any network id
-    },
-    
     poa: {
       provider: new HDWalletProvider(mnemonic, rpc_endpoint),
-      network_id: 3,
+      network_id: 1,
       gasPrice: 0
+    }
+  },
+  compilers: {
+    solc: {
+      version: "0.4.24"
     }
   }
 };

@@ -4,8 +4,7 @@ import { Loader, Dimmer, Form, Input, Message, Button, Card, Modal, Grid, Icon, 
 import web3 from '../ethereum/web3';
 import { FactoryInstance } from '../ethereum/factoryInstance';
 import { SupplyChainInstance as supplychain_instance } from '../ethereum/contractInstance';
-import { stateLabel } from "../utils";
-
+import { stateLabel, calDateTime } from "../utils";
 
 class Factory extends Component {
   state = {
@@ -76,6 +75,7 @@ class Factory extends Component {
 
   renderChains = () => {
     let items = this.state.deployedChains.filter(chainDets => chainDets[1] !== null && chainDets[2] !== null).map((chainDets, id) => {
+      let dateTime = calDateTime(chainDets[1]._lastAction[0]);
       var seconds = parseInt(chainDets[1].timeSinceLastAction, 10);
       var days = Math.floor(seconds / (3600 * 24));
       seconds -= days * 3600 * 24;
@@ -88,7 +88,8 @@ class Factory extends Component {
         <Card key={id} fluid style={{ overflowWrap: 'break-word' }}>
           <Card.Content>
             <Card.Header>Address: {chainDets[0]}</Card.Header>
-            <Card.Meta>Time since last action: <b>{days} days {hrs} hrs {mnts} min {seconds} sec</b></Card.Meta>
+            <Card.Meta>Created on: <b>{dateTime[0]} {dateTime[1]}</b></Card.Meta>
+            <Card.Meta>Last action: <b>{days} days {hrs} hrs {mnts} min {seconds} sec</b> ago</Card.Meta>
             <Card.Description>Description: {chainDets[1]._Description}</Card.Description>
             {(chainDets[1]._State !== '11' &&
               <div>
@@ -191,7 +192,7 @@ class Factory extends Component {
           <Grid.Column width={4}>
             <Grid.Row>
               <Modal trigger={<Button primary icon labelPosition='right'><Icon name='plus circle' />New Supply Chain</Button>}>
-                <Modal.Header>Supplychain Transportation Factory</Modal.Header>
+                <Modal.Header>Deploy New Supply Chain</Modal.Header>
                 <Modal.Content>
                   <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>
                     <Form.Field>

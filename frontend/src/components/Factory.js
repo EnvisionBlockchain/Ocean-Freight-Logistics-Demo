@@ -75,7 +75,7 @@ class Factory extends Component {
   }
 
   renderChains = () => {
-    let items = this.state.deployedChains.map((chainDets, id) => {
+    let items = this.state.deployedChains.filter(chainDets => chainDets[1] !== null && chainDets[2] !== null).map((chainDets, id) => {
       var seconds = parseInt(chainDets[1].timeSinceLastAction, 10);
       var days = Math.floor(seconds / (3600 * 24));
       seconds -= days * 3600 * 24;

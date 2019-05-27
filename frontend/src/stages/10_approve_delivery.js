@@ -11,7 +11,7 @@ class ApproveDelivery extends Component {
 
   async componentDidMount() {
     this.setState({ loadingData: true });
-    document.title = "Azure UI";
+    document.title = "Cargo Shipmemnt | Approve Delivery";
     this.setState({ loadingData: false });
   }
 
@@ -55,13 +55,18 @@ class ApproveDelivery extends Component {
 
     return (
       <div>
+        <br /><br />
         <Card>
           <Card.Content>
             <Card.Description>
               <b>Approve Delivery?</b>
-              <Button floated='right' color='green' loading={this.state.loading} primary basic onClick={this.approveDelivery}>Approve</Button>
-              <br />
-              {statusMessage}
+              <Button
+                floated='right'
+                color='green'
+                loading={this.state.loading}
+                disabled={this.state.loading}
+                onClick={this.approveDelivery}>APPROVE</Button>
+              <br /><br />
             </Card.Description>
           </Card.Content>
         </Card>
@@ -70,12 +75,17 @@ class ApproveDelivery extends Component {
           <Card.Content>
             <Card.Description>
               <b>Reject Delivery?</b>
-              <Button floated='right' color='red' loading={this.state.loading} primary basic onClick={this.rejectDocuments}>Reject</Button>
-              <br />
-              {statusMessage}
+              <Button
+                floated='right'
+                color='red'
+                loading={this.state.loading}
+                disabled={this.state.loading}
+                onClick={this.rejectDocuments}>REJECT</Button>
+              <br /><br />
             </Card.Description>
           </Card.Content>
         </Card>
+        {statusMessage}
       </div>
     );
   }

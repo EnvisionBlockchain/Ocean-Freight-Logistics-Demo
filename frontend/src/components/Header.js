@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 export default () => {
   return (
     <Menu style={{ marginTop: '0px', }} size={'large'}>
-      <Menu.Item><Link to='/UI-project'>Azure UI</Link></Menu.Item>
+      <Menu.Item><Link to='/'>HOME</Link></Menu.Item>
     </Menu>
   );
 };

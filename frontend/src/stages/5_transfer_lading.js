@@ -12,7 +12,7 @@ class TansferLading extends Component {
 
   async componentDidMount() {
     this.setState({ loadingData: true });
-    document.title = "Azure UI";
+    document.title = "Cargo Shipmemnt | Transfer Bill of Lading";
     this.setState({ loadingData: false });
   }
 
@@ -22,9 +22,9 @@ class TansferLading extends Component {
 
     try {
       await this.props.SupplyChainInstance.methods.TransferBillOfLading(this.state.destinationCustomsBroker, this.state.destinationCustoms).send({ from: this.props.account });
-      this.setState({ msg: 'Successfully Added!' });
+      this.setState({ msg: 'Successfully Added!', errorMessage: '' });
     } catch (err) {
-      this.setState({ errorMessage: err.message });
+      this.setState({ errorMessage: err.message, msg: '' });
     }
 
     this.setState({ loading: false });
@@ -48,6 +48,8 @@ class TansferLading extends Component {
 
     return (
       <div>
+        <br /><br />
+        <h2>Pending Action: </h2>
         <h3>Add Details</h3>
         <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>
           <Form.Field>
@@ -57,10 +59,10 @@ class TansferLading extends Component {
           <Form.Field>
             <label>Destination Customs</label>
             <Input onChange={event => this.setState({ destinationCustoms: event.target.value })} placeholder='Enter ETH Address' />
-          </Form.Field>
-          <Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Add</Button>
+          </Form.Field><br />
+          <Button loading={this.state.loading} disabled={this.state.loading} color='green' type='submit'>ADD</Button>
           <Message error header="Oops!" content={this.state.errorMessage} />
-          {statusMessage}
+          <br />{statusMessage}
         </Form>
       </div>
     );

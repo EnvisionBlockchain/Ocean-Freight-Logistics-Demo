@@ -10,8 +10,8 @@ class App extends Component {
       <BrowserRouter>
         <Layout>
           <Switch>
-            <Route exact path="/UI-project" component={Factory} />
-            <Route exact path="/UI-project/:chainAddress" component={Home} />
+            <Route exact path="/" component={Factory} />
+            <Route exact path="/:chainAddress" component={Home} />
           </Switch>
         </Layout>
       </BrowserRouter>

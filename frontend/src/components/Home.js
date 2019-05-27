@@ -29,7 +29,7 @@ class Home extends Component {
 
   async componentDidMount() {
     this.setState({ loadingData: true });
-    document.title = "Azure UI";
+    document.title = "Cargo Shipmemnt";
 
     const accounts = await web3.eth.getAccounts();
     const SupplyChainInstance = await supplychain_instance(this.props.match.params.chainAddress);
@@ -45,18 +45,20 @@ class Home extends Component {
   }
 
   renderStatus = () => {
-    let arr = this.state.metaData._lastAction;
-    let arrLen = arr.length;
-    let items = arr.map((action, id) => {
+    let lastAction = this.state.metaData._lastAction;
+    let lastActionLen = lastAction.length;
+    let items = lastAction.map((action, id) => {
+
+      let stateHistory = this.state.metaData._stateHistory[id]
       let dateTime = calDateTime(action);
 
-      if (arrLen !== id + 1) {
+      if (lastActionLen !== id + 1) {
         return (
           <Table.Row key={id}>
             <Table.Cell>
               <Header as='h4'>
                 <Header.Content>
-                  {id + 1}. {stateLabel[id.toString()][0]}
+                  {id + 1}. {stateLabel[stateHistory.toString()][0]}
                 </Header.Content>
               </Header>
             </Table.Cell>
@@ -67,7 +69,7 @@ class Home extends Component {
               {dateTime[1]}
             </Table.Cell>
             <Table.Cell>
-              {stateLabel[id.toString()][1]}
+              {stateLabel[stateHistory.toString()][1]}
             </Table.Cell>
           </Table.Row>
         );
@@ -77,7 +79,7 @@ class Home extends Component {
             <Table.Cell>
               <Header as='h4'>
                 <Header.Content>
-                  <span style={{ color: "red" }}>{id + 1}. {stateLabel[id.toString()][0]}</span>
+                  <span style={{ color: "red" }}>{id + 1}. {stateLabel[stateHistory.toString()][0]}</span>
                 </Header.Content>
               </Header>
             </Table.Cell>
@@ -88,7 +90,7 @@ class Home extends Component {
               {dateTime[1]}
             </Table.Cell>
             <Table.Cell>
-              {stateLabel[id.toString()][1]}
+              {stateLabel[stateHistory.toString()][1]}
             </Table.Cell>
           </Table.Row>
         );
@@ -96,7 +98,7 @@ class Home extends Component {
     });
 
     return (
-      <Table basic='very' celled collapsing>
+      <Table basic='very' celled collapsing unstackable>
         <Table.Header>
           <Table.Row>
             <Table.HeaderCell>
@@ -125,7 +127,7 @@ class Home extends Component {
     let dateTime = calDateTime(metaData._lastAction[0]);
     return (
       <div>
-        <h1>Supplychain Transportation #{this.props.location.state.contractNo + 1}</h1>
+        <h1>Supply Chain Transportation #{this.props.location.state.contractNo + 1}</h1>
         <h3>Contract State:<span style={{ "color": "red" }}> {stateLabel[contractState][0]}</span></h3>
 
         <Grid stackable reversed="mobile">
@@ -225,7 +227,6 @@ class Home extends Component {
           {this.renderStatus()}
         </Grid>
 
-        <h3>Pending Action: </h3>
         {this.state.instanceShipper === account && contractState === '0' &&
           <SendForExportClearance account={account} SupplyChainInstance={this.state.SupplyChainInstance} />
         }

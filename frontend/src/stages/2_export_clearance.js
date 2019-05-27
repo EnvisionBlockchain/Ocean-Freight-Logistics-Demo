@@ -16,7 +16,7 @@ class ExportClearanceAction extends Component {
 
   async componentDidMount() {
     this.setState({ loadingData: true });
-    document.title = "Azure UI";
+    document.title = "Cargo Shipmemnt | Export Clearance";
 
     const cfDocsHash = await this.props.SupplyChainInstance.methods.ExportDocument().call({ from: this.props.account });
     const cDocsHash = await this.props.SupplyChainInstance.methods.CustomsDocument().call({ from: this.props.account });
@@ -69,9 +69,9 @@ class ExportClearanceAction extends Component {
     this.setState({ msg: '', loading: true, errorMessage: '' });
     try {
       await this.props.SupplyChainInstance.methods.ApproveExportDocumentation().send({ from: this.props.account });
-      this.setState({ msg: 'Documents Approved!' });
+      this.setState({ msg: 'Documents Approved!', errorMessage: '' });
     } catch (err) {
-      this.setState({ errorMessage: err.messsage });
+      this.setState({ errorMessage: err.messsage, msg: '' });
     }
     this.setState({ loading: false });
   }
@@ -80,9 +80,9 @@ class ExportClearanceAction extends Component {
     this.setState({ msg: '', loading: true, errorMessage: '' });
     try {
       await this.props.SupplyChainInstance.methods.AmendExportDocumentation().send({ from: this.props.account });
-      this.setState({ msg: 'Documents Amend Requested!' });
+      this.setState({ msg: 'Documents Amend Requested!', errorMessage: '' });
     } catch (err) {
-      this.setState({ errorMessage: err.messsage });
+      this.setState({ errorMessage: err.messsage, msg: '' });
     }
     this.setState({ loading: false });
   }
@@ -91,9 +91,9 @@ class ExportClearanceAction extends Component {
     this.setState({ msg: '', loading: true, errorMessage: '' });
     try {
       await this.props.SupplyChainInstance.methods.Terminate().send({ from: this.props.account });
-      this.setState({ msg: 'Documents Rejected!' });
+      this.setState({ msg: 'Documents Rejected!', errorMessage: '' });
     } catch (err) {
-      this.setState({ errorMessage: err.messsage });
+      this.setState({ errorMessage: err.messsage, msg: '' });
     }
     this.setState({ loading: false });
   }
@@ -124,36 +124,8 @@ class ExportClearanceAction extends Component {
     }
 
     return (
-      <div>
-        <Button.Group basic>
-          <Modal size={'mini'} trigger={<Button basic color="blue">Approve Docs</Button>}>
-            <Modal.Header>Approve Documents</Modal.Header>
-            <Modal.Content>
-              Approve Documents?
-              <Button floated='right' loading={this.state.loading} primary basic onClick={this.approveDocuments}>Approve</Button>
-              {statusMessage}
-            </Modal.Content>
-          </Modal>
+      <div><br /><br />
 
-          <Modal size={'mini'} trigger={<Button basic color="blue">Amend Documentation</Button>}>
-            <Modal.Header>Send Document Amend Request</Modal.Header>
-            <Modal.Content>
-              Amend Documents?
-              <Button floated='right' loading={this.state.loading} primary basic onClick={this.amendDocuments}>Amend</Button>
-              {statusMessage}
-            </Modal.Content>
-          </Modal>
-
-          <Modal size={'mini'} trigger={<Button basic color="blue">Reject</Button>}>
-            <Modal.Header>Reject Export Clearance</Modal.Header>
-            <Modal.Content>
-              Reject Documents?
-              <Button floated='right' loading={this.state.loading} primary basic onClick={this.rejectDocuments}>Reject</Button>
-              {statusMessage}
-            </Modal.Content>
-          </Modal>
-        </Button.Group>
-        <br /><br />
         <Button.Group>
           <a href={this.state.cfURL} download={this.state.cfURL}><Button primary>Download Export Docs</Button></a>
           <Button.Or />
@@ -167,13 +139,44 @@ class ExportClearanceAction extends Component {
                   <label>Choose either Customs or Exports Document</label>
                   <Input type='file' onChange={event => { this.captureDocs(event.target.files[0]) }} />
                   {this.state.verified && verifyMsg !== '' &&
-                    <div>{verifyMsg}</div>
+                    <div><br />{verifyMsg}</div>
                   }
                 </Form.Field>
-                {/*<Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Verify</Button>*/}
                 <Message error header="Oops!" content={this.state.errorMessage} />
                 {statusMessage}
               </Form>
+            </Modal.Content>
+          </Modal>
+        </Button.Group>
+
+        <br /><br />
+
+        <h3>Pending Action: </h3>
+        <Button.Group basic>
+          <Modal size={'mini'} trigger={<Button basic color="green">APPROVE</Button>}>
+            <Modal.Header>Approve Documents</Modal.Header>
+            <Modal.Content>
+              Approve Documents?
+              <Button floated='right' loading={this.state.loading} color='green' onClick={this.approveDocuments}>APPROVE</Button>
+              <br /><br />{statusMessage}
+            </Modal.Content>
+          </Modal>
+
+          <Modal size={'mini'} trigger={<Button basic color="yellow">AMEND</Button>}>
+            <Modal.Header>Send Document Amend Request</Modal.Header>
+            <Modal.Content>
+              Amend Documents?
+              <Button floated='right' loading={this.state.loading} color='yellow' onClick={this.amendDocuments}>AMEND</Button>
+              <br /><br />{statusMessage}
+            </Modal.Content>
+          </Modal>
+
+          <Modal size={'mini'} trigger={<Button basic color="red">REJECT</Button>}>
+            <Modal.Header>Reject Export Clearance</Modal.Header>
+            <Modal.Content>
+              Reject Documents?
+              <Button floated='right' loading={this.state.loading} color='red' onClick={this.rejectDocuments}>REJECT</Button>
+              <br /><br />{statusMessage}
             </Modal.Content>
           </Modal>
         </Button.Group>

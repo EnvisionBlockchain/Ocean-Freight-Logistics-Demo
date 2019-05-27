@@ -22,7 +22,7 @@ class BoardingShipment extends Component {
 
   async componentDidMount() {
     this.setState({ loadingData: true });
-    document.title = "Azure UI";
+    document.title = "Cargo Shipmemnt | Shipment Boarding";
 
     const shippingHash = await this.props.SupplyChainInstance.methods.ShippingDocuments().call({ from: this.props.account });
     const laddingHash = await this.props.SupplyChainInstance.methods.DraftBillOfLadingDocument().call({ from: this.props.account });
@@ -32,21 +32,6 @@ class BoardingShipment extends Component {
     this.downloadFileFromAzure('laddingDocs', laddingHash);
 
     this.setState({ loadingData: false });
-  }
-
-  onSubmit = async (event) => {
-    event.preventDefault();
-    this.setState({ errorMessage: '', loading: true, msg: '' });
-
-    try {
-      await this.props.SupplyChainInstance.methods.UploadFinalBillOfLading(this.state.boardingDocsHash).send({ from: this.props.account });
-      await this.uploadFileToAzure(this.state.boardingDocs, this.state.boardingDocsHash);
-      this.setState({ msg: 'Successfully uploaded!' });
-    } catch (err) {
-      this.setState({ errorMessage: err.message });
-    }
-
-    this.setState({ loading: false });
   }
 
   downloadFileFromAzure = async (docType, fileName) => {
@@ -101,8 +86,23 @@ class BoardingShipment extends Component {
         console.log("error: ", err.message);
       }
     } else {
-      this.setState({ errorMessage: 'No file selected!' });
+      this.setState({ errorMessage: 'No file selected!', msg: '' });
     }
+    this.setState({ loading: false });
+  }
+
+  onSubmit = async (event) => {
+    event.preventDefault();
+    this.setState({ errorMessage: '', loading: true, msg: '' });
+
+    try {
+      await this.props.SupplyChainInstance.methods.UploadFinalBillOfLading(this.state.boardingDocsHash).send({ from: this.props.account });
+      await this.uploadFileToAzure(this.state.boardingDocs, this.state.boardingDocsHash);
+      this.setState({ msg: 'Successfully uploaded!', errorMessage: '' });
+    } catch (err) {
+      this.setState({ errorMessage: err.message, msg: '' });
+    }
+
     this.setState({ loading: false });
   }
 
@@ -110,9 +110,9 @@ class BoardingShipment extends Component {
     this.setState({ msg: '', loading: true, errorMessage: '' });
     try {
       await this.props.SupplyChainInstance.methods.AmendBillOfLading().send({ from: this.props.account });
-      this.setState({ msg: 'Documents Amend Requested!' });
+      this.setState({ msg: 'Documents Amend Requested!', errorMessage: '' });
     } catch (err) {
-      this.setState({ errorMessage: err.messsage });
+      this.setState({ errorMessage: err.messsage, msg: '' });
     }
     this.setState({ loading: false });
   }
@@ -142,16 +142,35 @@ class BoardingShipment extends Component {
 
     return (
       <div>
-        <Modal size={'mini'} trigger={<Button basic color="blue">Amend Docs</Button>}>
-          <Modal.Header>Send Documents Amend Request</Modal.Header>
+        <br /><br />
+        <Button.Group>
+          <a href={this.state.shippingURL} download={this.state.shippingURL}><Button primary>Download Shipping Docs</Button></a>
+          <Button.Or />
+          <a href={this.state.laddingURL} download={this.state.laddingURL}><Button primary>Download Bill of Ladding</Button></a>
+        </Button.Group>
+        <br /><br />
+        <Modal trigger={<Button basic color='blue'>Verify Docs</Button>}>
+          <Modal.Header>Verify The Downloaded Documents</Modal.Header>
           <Modal.Content>
-            Amend Documents?
-            <Button floated='right' loading={this.state.loading} primary basic onClick={this.amendDocuments}>Amend</Button>
-            {statusMessage}
+            <Form error={!!this.state.errorMessage}>
+              <Form.Field>
+                <label>Choose either Shipping Docs or Bill of Ladding to verify</label>
+                <Input type='file' onChange={event => { this.captureDocs(event.target.files[0], "verify") }} />
+                {this.state.verified && verifyMsg !== '' &&
+                  <div><br />{verifyMsg}</div>
+                }
+              </Form.Field>
+              <Message error header="Oops!" content={this.state.errorMessage} />
+              {statusMessage}
+            </Form>
           </Modal.Content>
         </Modal>
 
-        <Modal trigger={<Button basic color="red">Upload Docs</Button>}>
+
+        <br /><br />
+
+        <h3>Pending Action: </h3>
+        <Modal trigger={<Button basic color="green">UPLOAD</Button>}>
           <Modal.Header>Upload Shipping Docs</Modal.Header>
           <Modal.Content>
             <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>
@@ -165,37 +184,33 @@ class BoardingShipment extends Component {
                   </div>
                 }
               </Form.Field>
-              <Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Submit</Button>
+              <Button
+                loading={this.state.loading}
+                disabled={this.state.loading}
+                floated='right'
+                color='green'
+                icon='cloud upload'
+                labelPosition='right'
+                type='submit' content='UPLOAD' /><br /><br />
               <Message error header="Oops!" content={this.state.errorMessage} />
               {statusMessage}
             </Form>
           </Modal.Content>
         </Modal>
 
-        <br /><br />
-        <Button.Group>
-          <a href={this.state.shippingURL} download={this.state.shippingURL}><Button primary>Download Shipping Docs</Button></a>
-          <Button.Or />
-          <a href={this.state.laddingURL} download={this.state.laddingURL}><Button primary>Download Bill of Ladding</Button></a>
-          <Button.Or />
-          <Modal trigger={<Button primary>Verify Document</Button>}>
-            <Modal.Header>Verify The Downloaded Documents</Modal.Header>
-            <Modal.Content>
-              <Form error={!!this.state.errorMessage}>
-                <Form.Field>
-                  <label>Choose either Shipping Docs or Bill of Ladding</label>
-                  <Input type='file' onChange={event => { this.captureDocs(event.target.files[0], "verify") }} />
-                  {this.state.verified && verifyMsg !== '' &&
-                    <div>{verifyMsg}</div>
-                  }
-                </Form.Field>
-                {/*<Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Verify</Button>*/}
-                <Message error header="Oops!" content={this.state.errorMessage} />
-                {statusMessage}
-              </Form>
-            </Modal.Content>
-          </Modal>
-        </Button.Group>
+        <Modal size={'mini'} trigger={<Button basic color="yellow">AMEND</Button>}>
+          <Modal.Header>Send Documents Amend Request</Modal.Header>
+          <Modal.Content>
+            Amend Documents?
+            <Button
+              floated='right'
+              loading={this.state.loading}
+              disabled={this.state.loading}
+              color='yellow'
+              onClick={this.amendDocuments}>AMEND</Button>
+            <br /><br />{statusMessage}
+          </Modal.Content>
+        </Modal>
       </div>
     );
   }

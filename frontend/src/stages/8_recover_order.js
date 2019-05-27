@@ -21,7 +21,7 @@ class RecoverOrder extends Component {
 
   async componentDidMount() {
     this.setState({ loadingData: true });
-    document.title = "Azure UI";
+    document.title = "Cargo Shipmemnt | Shipment Recovery";
 
     const releaseOrderDocsHash = await this.props.SupplyChainInstance.methods.ReleaseOrderDocument().call({ from: this.props.account });
     this.setState({ releaseOrderDocsHash });
@@ -64,9 +64,9 @@ class RecoverOrder extends Component {
       await this.props.SupplyChainInstance.methods.SendDeliveryOrder(this.state.deliveryOrderDocsHash).send({ from: this.props.account });
       await this.uploadFileToAzure(this.state.deliveryOrderDocs, this.state.deliveryOrderDocsHash);
 
-      this.setState({ msg: 'Successfully Added!' });
+      this.setState({ msg: 'Successfully Added!', errorMessage: '' });
     } catch (err) {
-      this.setState({ errorMessage: err.message });
+      this.setState({ errorMessage: err.message, msg: '' });
     }
 
     this.setState({ loading: false });
@@ -94,7 +94,7 @@ class RecoverOrder extends Component {
         console.log("error: ", err.message);
       }
     } else {
-      this.setState({ errorMessage: 'No file selected!' });
+      this.setState({ errorMessage: 'No file selected!', msg: '' });
     }
     this.setState({ loading: false });
   }
@@ -124,6 +124,28 @@ class RecoverOrder extends Component {
 
     return (
       <div>
+        <br /><br />
+        <a href={this.state.releaseOrderDocsURL} download={this.state.releaseOrderDocsURL}><Button primary>Download Release Docs</Button></a>
+        <Modal trigger={<Button primary basic>VERIFY</Button>}>
+          <Modal.Header>Verify The Downloaded Documents</Modal.Header>
+          <Modal.Content>
+            <Form error={!!this.state.errorMessage}>
+              <Form.Field>
+                <label>Choose Release Oder Docs</label>
+                <Input type='file' onChange={event => { this.captureDocs(event.target.files[0], "verify") }} />
+                {this.state.verified && verifyMsg !== '' &&
+                  <div><br />{verifyMsg}</div>
+                }
+              </Form.Field>
+              <Message error header="Oops!" content={this.state.errorMessage} />
+              {statusMessage}
+            </Form>
+          </Modal.Content>
+        </Modal>
+
+        <br /><br />
+
+        <h2>Pending Action: </h2>
         <h3>Upload Delivery Order Document</h3>
         <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>
           <Form.Field>
@@ -134,35 +156,18 @@ class RecoverOrder extends Component {
                 <Progress percent={this.state.deliveryOrderDocsProgress} indicating progress='percent' />
               </div>
             }
-          </Form.Field>
-          <Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Upload</Button>
+          </Form.Field><br />
+          <Button
+            loading={this.state.loading}
+            disabled={this.state.loading}
+            floated='right'
+            color='green'
+            icon='cloud upload'
+            labelPosition='right'
+            type='submit' content='UPLOAD' /><br /><br />
           <Message error header="Oops!" content={this.state.errorMessage} />
-          {statusMessage}
+          <br />{statusMessage}
         </Form>
-
-        <br /><br />
-        <Button.Group>
-          <a href={this.state.releaseOrderDocsURL} download={this.state.releaseOrderDocsURL}><Button primary>Download Release Docs</Button></a>
-          <Button.Or />
-
-          <Modal trigger={<Button primary>Verify Document</Button>}>
-            <Modal.Header>Verify The Downloaded Documents</Modal.Header>
-            <Modal.Content>
-              <Form error={!!this.state.errorMessage}>
-                <Form.Field>
-                  <label>Choose Release Oder Docs</label>
-                  <Input type='file' onChange={event => { this.captureDocs(event.target.files[0], "verify") }} />
-                  {this.state.verified && verifyMsg !== '' &&
-                    <div>{verifyMsg}</div>
-                  }
-                </Form.Field>
-                <Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Verify</Button>
-                <Message error header="Oops!" content={this.state.errorMessage} />
-                {statusMessage}
-              </Form>
-            </Modal.Content>
-          </Modal>
-        </Button.Group>
       </div>
     );
   }

@@ -19,7 +19,7 @@ class InitiateShipment extends Component {
 
   async componentDidMount() {
     this.setState({ loadingData: true });
-    document.title = "Azure UI";
+    document.title = "Cargo Shipmemnt | Shipment Initiation";
     this.setState({ loadingData: false });
   }
 
@@ -32,9 +32,9 @@ class InitiateShipment extends Component {
       await this.uploadFileToAzure(this.state.shippingDocs, 'shippingDocs', this.state.shippingDocsHash);
       await this.uploadFileToAzure(this.state.shippingDocs, 'ladingDocs', this.state.shippingDocsHash);
 
-      this.setState({ msg: 'Successfully uploaded!' });
+      this.setState({ msg: 'Successfully uploaded!', errorMessage: '' });
     } catch (err) {
-      this.setState({ errorMessage: err.message });
+      this.setState({ errorMessage: err.message, msg: '' });
     }
 
     this.setState({ loading: false });
@@ -104,7 +104,8 @@ class InitiateShipment extends Component {
     }
 
     return (
-      <div>
+      <div><br /><br />
+        <h3>Pending Action: </h3>
         <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>
           <h3>Upload Docs</h3>
           <Form.Field>
@@ -126,10 +127,15 @@ class InitiateShipment extends Component {
                 <Progress percent={this.state.ladingDocsProgress} indicating progress='percent' />
               </div>
             }
-          </Form.Field>
-          <Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Submit</Button>
+          </Form.Field><br />
+          <Button loading={this.state.loading}
+            disabled={this.state.loading}
+            color='green'
+            type='submit'
+            labelPosition='right'
+            icon='cloud upload' content='UPLOAD' />
           <Message error header="Oops!" content={this.state.errorMessage} />
-          {statusMessage}
+          <br />{statusMessage}
         </Form>
       </div>
     );

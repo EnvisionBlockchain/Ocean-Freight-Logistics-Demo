@@ -16,7 +16,7 @@ class DeliveryOrder extends Component {
 
   async componentDidMount() {
     this.setState({ loadingData: true });
-    document.title = "Azure UI";
+    document.title = "Cargo Shipmemnt | Shipment Delivery";
 
     const deliveryOrderDocsHash = await this.props.SupplyChainInstance.methods.DeliveryOrderDocument().call({ from: this.props.account });
     this.setState({ deliveryOrderDocsHash });
@@ -113,40 +113,48 @@ class DeliveryOrder extends Component {
 
     return (
       <div>
-        <Card>
+        <br /> <br />
+        <h3>Pending Action: </h3>
+
+        <a href={this.state.deliveryOrderDocsURL} download={this.state.deliveryOrderDocsURL}><Button primary>Download Delivery Docs</Button></a>
+        <Modal trigger={<Button primary basic>VERIFY</Button>}>
+          <Modal.Header>Verify The Downloaded Documents</Modal.Header>
+          <Modal.Content>
+            <Form error={!!this.state.errorMessage}>
+              <Form.Field>
+                <label>Choose Release Oder Docs</label>
+                <Input type='file' onChange={event => { this.captureDocs(event.target.files[0], "verify") }} />
+                {this.state.verified && verifyMsg !== '' &&
+                  <div><br />{verifyMsg}</div>
+                }
+              </Form.Field>
+              <Message error header="Oops!" content={this.state.errorMessage} />
+              {statusMessage}
+            </Form>
+          </Modal.Content>
+        </Modal>
+
+        <br /> <br />
+
+        <h3>Pending Action: </h3>
+        <Card fluid>
           <Card.Content>
             <Card.Description>
               <b>Send Delivery Order For Consignee Signature</b>
-              <Button floated="right" loading={this.state.loading} primary basic onClick={this.sendDeliveryOrder}>Send</Button>
-              <br />
+              <Button
+                loading={this.state.loading}
+                disabled={this.state.loading}
+                floated="right"
+                color='green'
+                icon='chevron right'
+                labelPosition='right'
+                onClick={this.sendDeliveryOrder}
+                content='SEND' />
+              <br /><br />
               {statusMessage}
             </Card.Description>
           </Card.Content>
         </Card>
-
-        <br /> <br />
-        <Button.Group>
-          <a href={this.state.deliveryOrderDocsURL} download={this.state.deliveryOrderDocsURL}><Button primary>Download Delivery Docs</Button></a>
-          <Button.Or />
-
-          <Modal trigger={<Button primary>Verify Document</Button>}>
-            <Modal.Header>Verify The Downloaded Documents</Modal.Header>
-            <Modal.Content>
-              <Form error={!!this.state.errorMessage}>
-                <Form.Field>
-                  <label>Choose Release Oder Docs</label>
-                  <Input type='file' onChange={event => { this.captureDocs(event.target.files[0], "verify") }} />
-                  {this.state.verified && verifyMsg !== '' &&
-                    <div>{verifyMsg}</div>
-                  }
-                </Form.Field>
-                <Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Verify</Button>
-                <Message error header="Oops!" content={this.state.errorMessage} />
-                {statusMessage}
-              </Form>
-            </Modal.Content>
-          </Modal>
-        </Button.Group>
       </div >
     );
   }

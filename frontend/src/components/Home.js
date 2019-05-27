@@ -96,7 +96,7 @@ class Home extends Component {
     });
 
     return (
-      <Table basic='very' celled collapsing>
+      <Table basic='very' celled collapsing unstackable>
         <Table.Header>
           <Table.Row>
             <Table.HeaderCell>

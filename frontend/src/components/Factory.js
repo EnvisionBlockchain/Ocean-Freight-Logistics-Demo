@@ -210,7 +210,15 @@ class Factory extends Component {
                       <label>Consignee Address</label>
                       <Input onChange={event => this.setState({ consigneeAddress: event.target.value })} />
                     </Form.Field>
-                    <Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Deploy</Button>
+                    <Button
+                      loading={this.state.loading}
+                      disabled={this.state.loading}
+                      floated='right'
+                      labelPosition='left'
+                      icon='globe'
+                      color='green'
+                      type='submit'
+                      content='DEPLOY' /><br /><br />
                     <Message error header="Oops!" content={this.state.errorMessage} />
                     {statusMessage}
                   </Form>

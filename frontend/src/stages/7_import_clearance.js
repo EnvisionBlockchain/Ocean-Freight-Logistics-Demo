@@ -215,7 +215,12 @@ class ImportClearance extends Component {
             <Modal.Header>Send Document Amend Request</Modal.Header>
             <Modal.Content>
               Amend Documents?
-            <Button floated='right' color='yellow' loading={this.state.loading} onClick={this.amendDocuments}>AMEND</Button>
+            <Button
+                floated='right'
+                color='yellow'
+                loading={this.state.loading}
+                disabled={this.state.loading}
+                onClick={this.amendDocuments}>AMEND</Button>
               <br /><br />{statusMessage}
             </Modal.Content>
           </Modal>
@@ -224,7 +229,12 @@ class ImportClearance extends Component {
             <Modal.Header>Reject Export Clearance</Modal.Header>
             <Modal.Content>
               Reject Documents?
-            <Button floated='right' color='red' loading={this.state.loading} onClick={this.rejectDocuments}>REJECT</Button>
+            <Button
+                floated='right'
+                color='red'
+                loading={this.state.loading}
+                disabled={this.state.loading}
+                onClick={this.rejectDocuments}>REJECT</Button>
               <br /><br />{statusMessage}
             </Modal.Content>
           </Modal>

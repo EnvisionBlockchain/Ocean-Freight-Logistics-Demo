@@ -29,7 +29,7 @@ class Factory extends Component {
 
     const accounts = await web3.eth.getAccounts();
     let deployedChainsAddr = await FactoryInstance.methods.getDeployedSupplyChain().call({ from: accounts[0] });
-
+    deployedChainsAddr = deployedChainsAddr.reverse()
 
     let last = this.state.chainsPerPage;
     if (deployedChainsAddr.length < last) {
@@ -185,41 +185,41 @@ class Factory extends Component {
       <div>
         <h1>Deployed Supplychain Transportation Contracts</h1>
         <Grid stackable reversed='mobile'>
-          <Grid.Row>
-            <Grid.Column width={12}>
-              {(this.state.deployedChainsAddr.length > 0 && this.renderChains()) || <b>No contracts deployed!</b>}
-            </Grid.Column>
-            <Grid.Column width={4}>
-              <Grid.Row>
-                <Modal trigger={<Button primary icon labelPosition='right'><Icon name='plus circle' />Deploy New Supplychain</Button>}>
-                  <Modal.Header>Supplychain Transportation Factory</Modal.Header>
-                  <Modal.Content>
-                    <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>
-                      <Form.Field>
-                        <label>Description</label>
-                        <Input onChange={event => this.setState({ description: event.target.value })} />
-                      </Form.Field>
-                      <Form.Field>
-                        <label>Freight Carrier Address</label>
-                        <Input onChange={event => this.setState({ freightCarrierAddress: event.target.value })} />
-                      </Form.Field>
-                      <Form.Field>
-                        <label>Origin Customs Address</label>
-                        <Input onChange={event => this.setState({ originCustomsAddress: event.target.value })} />
-                      </Form.Field>
-                      <Form.Field>
-                        <label>Consignee Address</label>
-                        <Input onChange={event => this.setState({ consigneeAddress: event.target.value })} />
-                      </Form.Field>
-                      <Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Deploy</Button>
-                      <Message error header="Oops!" content={this.state.errorMessage} />
-                      {statusMessage}
-                    </Form>
-                  </Modal.Content>
-                </Modal>
-              </Grid.Row>
-            </Grid.Column>
-          </Grid.Row>
+          <Grid.Column width={12}>
+            {(this.state.deployedChainsAddr.length > 0 && this.renderChains()) || <b>No contracts deployed!</b>}
+          </Grid.Column>
+          <Grid.Column width={4}>
+            <Grid.Row>
+              <Modal trigger={<Button primary icon labelPosition='right'><Icon name='plus circle' />New Supply Chain</Button>}>
+                <Modal.Header>Supplychain Transportation Factory</Modal.Header>
+                <Modal.Content>
+                  <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>
+                    <Form.Field>
+                      <label>Description</label>
+                      <Input onChange={event => this.setState({ description: event.target.value })} />
+                    </Form.Field>
+                    <Form.Field>
+                      <label>Freight Carrier Address</label>
+                      <Input onChange={event => this.setState({ freightCarrierAddress: event.target.value })} />
+                    </Form.Field>
+                    <Form.Field>
+                      <label>Origin Customs Address</label>
+                      <Input onChange={event => this.setState({ originCustomsAddress: event.target.value })} />
+                    </Form.Field>
+                    <Form.Field>
+                      <label>Consignee Address</label>
+                      <Input onChange={event => this.setState({ consigneeAddress: event.target.value })} />
+                    </Form.Field>
+                    <Button loading={this.state.loading} disabled={this.state.loading} primary basic type='submit'>Deploy</Button>
+                    <Message error header="Oops!" content={this.state.errorMessage} />
+                    {statusMessage}
+                  </Form>
+                </Modal.Content>
+              </Modal>
+            </Grid.Row>
+          </Grid.Column>
+        </Grid>
+        <Grid>
           <Grid.Row centered>
             <Button.Group>
               {renderPageNumbers}

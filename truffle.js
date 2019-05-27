@@ -7,7 +7,7 @@ module.exports = {
   networks: {
     poa: {
       provider: new HDWalletProvider(mnemonic, rpc_endpoint),
-      network_id: 1,
+      network_id: 3,
       gasPrice: 0
     }
   },

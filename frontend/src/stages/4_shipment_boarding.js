@@ -202,7 +202,12 @@ class BoardingShipment extends Component {
           <Modal.Header>Send Documents Amend Request</Modal.Header>
           <Modal.Content>
             Amend Documents?
-            <Button floated='right' loading={this.state.loading} color='yellow' onClick={this.amendDocuments}>AMEND</Button>
+            <Button
+              floated='right'
+              loading={this.state.loading}
+              disabled={this.state.loading}
+              color='yellow'
+              onClick={this.amendDocuments}>AMEND</Button>
             <br /><br />{statusMessage}
           </Modal.Content>
         </Modal>

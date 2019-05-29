@@ -13,5 +13,5 @@ copy-code:
 	@echo
 	docker cp -a ui-project-container:/frontend $(DIR)
 
-build-docker:
-	docker build -t pyoey/ui-project .
+image:
+	docker build -t pyoey/cargo-shipment .

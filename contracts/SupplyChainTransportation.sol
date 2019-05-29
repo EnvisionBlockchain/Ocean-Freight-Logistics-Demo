@@ -228,7 +228,7 @@ contract SupplyChainTransportation is WorkbenchBase("SupplyChainTransportation",
 
     function TransferBillOfLading(address destinationCustomsBroker, address destinationCustoms) public {
         require(State == StateType.TransferBillOfLading);
-        require(msg.sender == InstanceShipper);
+        require(msg.sender == InstanceFreightCarrier);
       
         InstanceDestinationCustomsBroker = destinationCustomsBroker;
         InstanceDestinationCustoms = destinationCustoms;

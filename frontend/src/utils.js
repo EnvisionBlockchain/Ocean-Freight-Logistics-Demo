@@ -65,7 +65,7 @@ export function azureDownload(fileName) {
 
 
 export const stateLabel = {
-  '0': ["Begin Trade", "Shipper"],
+  '0': ["Begin Trade", "Shipper"], // Acc7 - 0xa10840407208A44Da80624422d96fF596E505b0f
   '1': ["Export Clearance", "Origin Customs"], // 0x8FB092b0C5D80D1f4A1A0FF17d5a638AFe24cFCe
   '2': ["Shipment Initiation", "Shipper"],
   '3': ["Shipment Boarding", "Freight Carrier"], // 0x8B8ba03Ed61Ad1CB0E9bEFD0D02ECB444834887D

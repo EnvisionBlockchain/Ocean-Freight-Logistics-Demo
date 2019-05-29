@@ -156,13 +156,13 @@ class ImportClearance extends Component {
     return (
       <div>
         <br /><br />
-        <Button.Group>
-          <a href={this.state.shippingURL} download={this.state.shippingURL}><Button primary>Download Shipping Docs</Button></a>
-          <Button.Or />
-          <a href={this.state.laddingURL} download={this.state.laddingURL}><Button primary>Download Bill of Ladding</Button></a>
-        </Button.Group>
+
+        <a href={this.state.shippingURL} download={this.state.shippingURL}><Button primary>Download Shipping Docs</Button></a>
+        <a href={this.state.laddingURL} download={this.state.laddingURL}><Button primary>Download Bill of Ladding</Button></a>
+
         <br /><br />
-        <Modal trigger={<Button primary basic>VERIFY</Button>}>
+
+        <Modal trigger={<Button color='blue' basic>VERIFY</Button>}>
           <Modal.Header>Verify The Downloaded Documents</Modal.Header>
           <Modal.Content>
             <Form error={!!this.state.errorMessage}>

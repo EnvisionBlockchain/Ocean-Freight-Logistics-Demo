@@ -126,28 +126,27 @@ class ExportClearanceAction extends Component {
     return (
       <div><br /><br />
 
-        <Button.Group>
-          <a href={this.state.cfURL} download={this.state.cfURL}><Button primary>Download Export Docs</Button></a>
-          <Button.Or />
-          <a href={this.state.cURL} download={this.state.cfURL}><Button primary>Download Customs Docs</Button></a>
-          <Button.Or />
-          <Modal trigger={<Button primary>Verify Docs</Button>}>
-            <Modal.Header>Verify The Downloaded Documents</Modal.Header>
-            <Modal.Content>
-              <Form error={!!this.state.errorMessage}>
-                <Form.Field>
-                  <label>Choose either Customs or Exports Document</label>
-                  <Input type='file' onChange={event => { this.captureDocs(event.target.files[0]) }} />
-                  {this.state.verified && verifyMsg !== '' &&
-                    <div><br />{verifyMsg}</div>
-                  }
-                </Form.Field>
-                <Message error header="Oops!" content={this.state.errorMessage} />
-                {statusMessage}
-              </Form>
-            </Modal.Content>
-          </Modal>
-        </Button.Group>
+        <a href={this.state.cfURL} download={this.state.cfURL}><Button primary>Download Export Docs</Button></a>
+        <a href={this.state.cURL} download={this.state.cfURL}><Button primary>Download Customs Docs</Button></a>
+
+        <br /><br />
+
+        <Modal trigger={<Button color='blue' basic>VERIFY</Button>}>
+          <Modal.Header>Verify The Downloaded Documents</Modal.Header>
+          <Modal.Content>
+            <Form error={!!this.state.errorMessage}>
+              <Form.Field>
+                <label>Choose either Customs or Exports Document</label>
+                <Input type='file' onChange={event => { this.captureDocs(event.target.files[0]) }} />
+                {this.state.verified && verifyMsg !== '' &&
+                  <div><br />{verifyMsg}</div>
+                }
+              </Form.Field>
+              <Message error header="Oops!" content={this.state.errorMessage} />
+              {statusMessage}
+            </Form>
+          </Modal.Content>
+        </Modal>
 
         <br /><br />
 

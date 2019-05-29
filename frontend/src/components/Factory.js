@@ -41,7 +41,7 @@ class Factory extends Component {
         const SupplyChainInstance = await supplychain_instance(deployedChainsAddr[i]);
         const InstanceShipper = await SupplyChainInstance.methods.InstanceShipper().call({ from: accounts[0] });
         let metaData = await SupplyChainInstance.methods.getMetaData().call({ from: accounts[0] });
-        deployedChains.push([deployedChainsAddr[i], metaData, InstanceShipper, i]);
+        deployedChains.push([deployedChainsAddr[i], metaData, InstanceShipper, last - 1 - i]);
       } catch (e) {
         //deployedChains.push([deployedChainsAddr[i], { _killed: true }, "0x0000", 0]);
       }
@@ -64,7 +64,7 @@ class Factory extends Component {
         const SupplyChainInstance = await supplychain_instance(deployedChainsAddr[i]);
         const InstanceShipper = await SupplyChainInstance.methods.InstanceShipper().call({ from: account });
         let metaData = await SupplyChainInstance.methods.getMetaData().call({ from: account });
-        deployedChains.push([deployedChainsAddr[i], metaData, InstanceShipper, i]);
+        deployedChains.push([deployedChainsAddr[i], metaData, InstanceShipper, last - 1 - i]);
       } catch (e) {
         //deployedChains.push([deployedChainsAddr[i], { _killed: true }, "0x0000", 0]);
       }

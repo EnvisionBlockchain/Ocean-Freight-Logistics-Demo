@@ -12,19 +12,17 @@ RUN apk add --update \
 WORKDIR /mnt
 
 ADD frontend/package.json .
-ADD frontend/public ./public
-ADD frontend/src/ ./src
 
 RUN npm install
 
 FROM node:10-alpine
 
-RUN apk add --update --no-cache bash nano
+RUN apk add --update --no-cache bash nano tree
 WORKDIR /mnt
 
 COPY --from=build /mnt/package.json .
-COPY --from=build /mnt/public ./public
 COPY --from=build /mnt/node_modules ./node_modules
-COPY --from=build /mnt/src/ ./src
+ADD frontend/public ./mnt/public
+ADD frontend/src/ ./mnt/src
 
 CMD ["npm", "start"]

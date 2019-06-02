@@ -36,9 +36,9 @@ class SendForExportClearance extends Component {
     try {
       await api.begin_trade(this.props.token, this.props.id, this.state.seller, this.state.pod, this.state.bank,
                       this.state.cDocsHash, this.state.cfDocsHash);
+      await this.uploadFileToAzure(this.state.cfDocs, "cfDocs", this.state.cfDocsHash);
+      await this.uploadFileToAzure(this.state.cDocs, "cDocs", this.state.cDocsHash);
 
-      // await this.uploadFileToAzure(this.state.cfDocs, "cfDocs", this.state.cfDocsHash);
-      // await this.uploadFileToAzure(this.state.cDocs, "cDocs", this.state.cDocsHash);
       this.setState({ cfDocsProgress: 100 });
       this.setState({ cDocsProgress: 100 });
 

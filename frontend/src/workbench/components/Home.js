@@ -13,7 +13,6 @@ import ImportClearance from "../stages/7_import_clearance";
 import RecoverOrder from "../stages/8_recover_order";
 import DeliveryOrder from "../stages/9_delivery_shipment";
 import ApproveDelivery from "../stages/10_approve_delivery";
-import AdUser from "../helpers/users";
 import * as api from "../helpers/Api";
 
 class Home extends Component {

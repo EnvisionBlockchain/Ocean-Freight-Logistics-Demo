@@ -7,7 +7,7 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { Loader, Dimmer, Message, Button, Card, Grid, Icon, Progress, Modal, Form, Input } from 'semantic-ui-react';
-import {getTime, stateLabel, timezone} from "../helpers/utils";
+import {stateLabel, timezone} from "../helpers/utils";
 import AdUser from "../helpers/users";
 import * as api from "../helpers/Api";
 import Dropdown from "semantic-ui-react/dist/commonjs/modules/Dropdown/Dropdown";
@@ -74,6 +74,14 @@ class Factory extends Component {
     return Promise.resolve(contracts);
   }
 
+  getTime(transaction){
+    if(transaction.contractActions.length === 0){
+      return false;
+    }
+    let x=transaction.contractActions.length;
+    return transaction.contractActions[x-1].timestamp;
+  }
+
   createUserList(users){
     let newList=[];
     for(let i=0; i < users.length; i++){
@@ -94,7 +102,7 @@ class Factory extends Component {
   }
 
   verifyContract(contract){
-    return (getTime(contract) && this.getStage(contract) &&
+    return (this.getTime(contract) && this.getStage(contract) &&
       this.getDescription(contract));
 
   }
@@ -133,7 +141,7 @@ class Factory extends Component {
 
   getChains = async (first, last) => {
     this.setState({ loadingData: true });
-    const { account, deployedChainsAddr } = this.state;
+    const { deployedChainsAddr } = this.state;
 
     if (last > this.state.deployedChainsAddr.length) {
       last = this.state.deployedChainsAddr.length;
@@ -155,53 +163,63 @@ class Factory extends Component {
   };
 
   renderChains = () => {
-    //chainDets is just the current object, id is the id of the current element
-    let items = this.state.deployedChains.map((chainDets, id) => {
-      if(!this.verifyContract(chainDets)){
-        return;
-      }
-      let oldDate = parseInt(Date.parse(getTime(chainDets) +  this.state.timezone), 10);
-      let newDate = parseInt(Date.now(),10);
-      let difference = Math.abs(oldDate - newDate);
+    let that=this;
+    let items = this.state.deployedChains
 
-      let seconds = Math.floor(difference/1000) ;
-      let days = Math.floor(seconds / (3600 * 24));
-      seconds -= days * 3600 * 24;
-      let hrs = Math.floor(seconds / 3600);
-      seconds -= hrs * 3600;
-      let mnts = Math.floor(seconds / 60);
-      seconds -= mnts * 60;
-      let stage=this.getStage(chainDets);
-      return (
-        <Card key={id} fluid style={{ overflowWrap: 'break-word' }}>
-          <Card.Content>
-            <Card.Header>Address: {chainDets.ledgerIdentifier}</Card.Header>
-            <Card.Meta>Time since last action: <b>{days} days {hrs} hrs {mnts} min {seconds} sec</b></Card.Meta>
-            <Card.Description>Description: {this.getDescription(chainDets)}</Card.Description>
-            {(stage !== '11' &&
-              <div>
-                <Card.Description>Stage: {parseInt(stage, 10) + 1}/11 (<span style={{ "color": "red" }}>{stateLabel[stage][0]}</span>)</Card.Description><br />
-                <Progress value={stage} total='10' indicating />
-                <Link to={{
-                  pathname: `/UI-project/${chainDets.id}`,
-                  state: {
-                    data:chainDets,
-                    account:this.state.account,
-                    token:this.state.apiKey,
-                    users:this.state.allUsers
-                  }
-                }}>
-                  <Button primary icon labelPosition="right" floated="right"><Icon name='right arrow' />Details</Button>
-                </Link>
-              </div>) ||
-            <div>Stage: <span style={{ "color": "red" }}>Terminated</span></div>
-            }
+        // .filter(function(chainDets){
+        //   console.log("test");
+        //   let x=that.verifyContract(chainDets);
+        //   console.log(x);
+        // })
+        .map((chainDets, id) => {
 
-            {this.state.account === chainDets.contractProperties[2].value &&
-              <Button loading={this.state.loading} disabled={this.state.loading} basic color='red' icon labelPosition="left" floated='right' onClick={() => this.deleteContract(chainDets[0])}><Icon name="warning sign" />Delete</Button>
-            }
-          </Card.Content>
-        </Card>
+          if(!this.verifyContract(chainDets)){
+            return;
+          }
+        let x=chainDets.contractActions.length;
+
+        let oldDate = parseInt(Date.parse(chainDets.contractActions[x-1].timestamp +  timezone), 10);
+        let newDate = parseInt(Date.now(),10);
+        let difference = Math.abs(oldDate - newDate);
+
+        let seconds = Math.floor(difference/1000) ;
+        let days = Math.floor(seconds / (3600 * 24));
+        seconds -= days * 3600 * 24;
+        let hrs = Math.floor(seconds / 3600);
+        seconds -= hrs * 3600;
+        let mnts = Math.floor(seconds / 60);
+        seconds -= mnts * 60;
+        let stage=this.getStage(chainDets);
+        return (
+          <Card key={id} fluid style={{ overflowWrap: 'break-word' }}>
+            <Card.Content>
+              <Card.Header>Address: {chainDets.ledgerIdentifier}</Card.Header>
+              <Card.Meta>Time since last action: <b>{days} days {hrs} hrs {mnts} min {seconds} sec</b></Card.Meta>
+              <Card.Description>Description: {this.getDescription(chainDets)}</Card.Description>
+              {(stage !== '11' &&
+                <div>
+                  <Card.Description>Stage: {parseInt(stage, 10) + 1}/11 (<span style={{ "color": "red" }}>{stateLabel[stage][0]}</span>)</Card.Description><br />
+                  <Progress value={stage} total='10' indicating />
+                  <Link to={{
+                    pathname: `/UI-project/${chainDets.id}`,
+                    state: {
+                      data:chainDets,
+                      account:this.state.account,
+                      token:this.state.apiKey,
+                      users:this.state.allUsers
+                    }
+                  }}>
+                    <Button primary icon labelPosition="right" floated="right"><Icon name='right arrow' />Details</Button>
+                  </Link>
+                </div>) ||
+              <div>Stage: <span style={{ "color": "red" }}>Terminated</span></div>
+              }
+
+              {this.state.account === chainDets.contractProperties[2].value &&
+                <Button loading={this.state.loading} disabled={this.state.loading} basic color='red' icon labelPosition="left" floated='right' onClick={() => this.deleteContract(chainDets[0])}><Icon name="warning sign" />Delete</Button>
+              }
+            </Card.Content>
+          </Card>
       );
     });
 
@@ -224,10 +242,6 @@ class Factory extends Component {
   onSubmit = async (event) => {
     event.preventDefault();
     this.setState({ errorMessage: '', loading: true, msg: '' });
-
-    console.log(this.state.freightCarrierAddress, this.state.description, this.state.originCustomsAddress,
-                this.state.consigneeAddress);
-
     await api.createContract(this.state.apiKey, this.state.description, this.state.freightCarrierAddress,
                              this.state.originCustomsAddress, this.state.consigneeAddress);
     // try {
@@ -382,13 +396,14 @@ class Factory extends Component {
       return pageNumbers;
     }
 
-    renderPageNumbers(pageNumbers) {
-      const renderPageNumbers = pageNumbers.map(number => {
-        return (
-          <Button key={number} id={number} onClick={this.handleClick}>{number}</Button>
-        );
-      });
-    }
+    //TODO: remove this
+    // renderPageNumbers(pageNumbers) {
+    //   const renderPageNumbers = pageNumbers.map(number => {
+    //     return (
+    //       <Button key={number} id={number} onClick={this.handleClick}>{number}</Button>
+    //     );
+    //   });
+    // }
 
 
 }

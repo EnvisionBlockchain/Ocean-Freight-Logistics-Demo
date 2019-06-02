@@ -35,7 +35,7 @@ export default () => (
           Etherum
         </Table.Cell>
         <Table.Cell>
-          <Link to="">Etherum</Link>
+          <a href={"http://uploadcustomsfiles.z13.web.core.windows.net/UI-project"}>Etherum</a>
         </Table.Cell>
         <Table.Cell>
           This version connects directly to the Etherum network using Webj3

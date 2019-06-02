@@ -26,7 +26,7 @@ export function calDateTime(unixDate) {
 
 
 export async function azureUpload(fileName) {
-  const account = "ohtlvuethpoasanboxwb";
+  const account = "uiappwb";
   const accountSas = config.accountSAS;
 
   const pipeline = StorageURL.newPipeline(new AnonymousCredential(), {
@@ -34,7 +34,7 @@ export async function azureUpload(fileName) {
     telemetry: { value: "HighLevelSample V1.0.0" } // Customized telemetry string
   });
 
-  const serviceURL = new ServiceURL(`https://${account}.blob.core.windows.net${accountSas}`, pipeline);
+  const serviceURL = new ServiceURL(`https://${account}.file.core.windows.net${accountSas}`, pipeline);
   const shareName = "uploadfileshare";
   const shareURL = ShareURL.fromServiceURL(serviceURL, shareName);
 
@@ -43,11 +43,11 @@ export async function azureUpload(fileName) {
   const fileURL = FileURL.fromDirectoryURL(directoryURL, fileName);
 
   return fileURL;
-};
-//
-//
+}
+
+
 export function azureDownload(fileName) {
-  const account = "uploadcustomsfiles";
+  const account = "uiappwb";
   const accountSas = config.accountSAS;
 
   const pipeline = StorageURL.newPipeline(new AnonymousCredential(), {
@@ -82,7 +82,7 @@ export const stateLabel = {
 };
 
 export const functionIdMap={
-  //index is function id
+  //index is function id parameter
   '1': stateLabel[0],
   '6': stateLabel[0],
   '9': stateLabel[1],
@@ -115,10 +115,4 @@ export function getToken(authContext, resource){
   authContext.acquireToken()
 }
 
-export function getTime(transaction){
-  if(transaction.contractActions.length === 0){
-    return false;
-  }
-  let x=transaction.contractActions.length;
-  return transaction.contractActions[x-1].timestamp;
-}
+

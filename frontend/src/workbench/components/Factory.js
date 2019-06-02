@@ -166,11 +166,16 @@ class Factory extends Component {
     let that=this;
     let items = this.state.deployedChains
 
-        // .filter(function(chainDets){
-        //   console.log("test");
-        //   let x=that.verifyContract(chainDets);
-        //   console.log(x);
-        // })
+
+
+
+
+
+    // .filter(function(chainDets){
+    //   console.log("test");
+    //   let x=that.verifyContract(chainDets);
+    //   console.log(x);
+    // })
         .map((chainDets, id) => {
 
           if(!this.verifyContract(chainDets)){

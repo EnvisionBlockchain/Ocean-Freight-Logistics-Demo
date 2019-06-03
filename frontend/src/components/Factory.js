@@ -184,7 +184,7 @@ class Factory extends Component {
 
     return (
       <div>
-        <h1>Deployed Supplychain Transportation Contracts</h1>
+        <h1>Deployed Supply Chain Transportation Contracts</h1>
         <Grid stackable reversed='mobile'>
           <Grid.Column width={12}>
             {(this.state.deployedChainsAddr.length > 0 && this.renderChains()) || <b>No contracts deployed!</b>}

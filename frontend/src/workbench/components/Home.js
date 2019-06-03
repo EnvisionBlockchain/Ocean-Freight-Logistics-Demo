@@ -29,8 +29,6 @@ class Home extends Component {
   };
 
   async componentDidMount() {
-    let currentAccount=null;
-    let allUsers=[];
     this.setState({ loadingData: true });
     document.title = "Azure UI";
 
@@ -102,6 +100,8 @@ class Home extends Component {
         return this.state.data.contractProperties[8].value;
       case 'Seller':
         return this.state.data.contractProperties[9].value;
+      default:
+        //Do Nothing
     }
   }
 

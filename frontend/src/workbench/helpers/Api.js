@@ -22,6 +22,9 @@ api.getWorkflowParamterIdForExportClearence=function(action){
     case 'approve':
       body=3;
       break;
+
+    default:
+      //Do nothing
   }
   return body;
 };

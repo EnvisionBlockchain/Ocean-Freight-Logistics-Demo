@@ -104,7 +104,6 @@ class Factory extends Component {
   verifyContract(contract){
     return (this.getTime(contract) && this.getStage(contract) &&
       this.getDescription(contract));
-
   }
 
   setChains(deployedChainsAddr){
@@ -138,7 +137,6 @@ class Factory extends Component {
     return transaction.contractProperties[1].value;
   }
 
-
   getChains = async (first, last) => {
     this.setState({ loadingData: true });
     const { deployedChainsAddr } = this.state;
@@ -146,7 +144,6 @@ class Factory extends Component {
     if (last > this.state.deployedChainsAddr.length) {
       last = this.state.deployedChainsAddr.length;
     }
-
     let deployedChains = [];
     for (var i = first; i < last; i++) {
       try {
@@ -163,26 +160,11 @@ class Factory extends Component {
   };
 
   renderChains = () => {
-    let that=this;
     let items = this.state.deployedChains
-
-
-
-
-
-
-    // .filter(function(chainDets){
-    //   console.log("test");
-    //   let x=that.verifyContract(chainDets);
-    //   console.log(x);
-    // })
+        .filter(chainDets => this.verifyContract(chainDets))
         .map((chainDets, id) => {
 
-          if(!this.verifyContract(chainDets)){
-            return;
-          }
         let x=chainDets.contractActions.length;
-
         let oldDate = parseInt(Date.parse(chainDets.contractActions[x-1].timestamp +  timezone), 10);
         let newDate = parseInt(Date.now(),10);
         let difference = Math.abs(oldDate - newDate);
@@ -249,14 +231,6 @@ class Factory extends Component {
     this.setState({ errorMessage: '', loading: true, msg: '' });
     await api.createContract(this.state.apiKey, this.state.description, this.state.freightCarrierAddress,
                              this.state.originCustomsAddress, this.state.consigneeAddress);
-    // try {
-    //   let { description, freightCarrierAddress, originCustomsAddress, consigneeAddress, account } = this.state;
-    //   await FactoryInstance.methods.createSupplyChain(description, freightCarrierAddress, originCustomsAddress, consigneeAddress).send({ from: account });
-    //   this.setState({ msg: 'Contract deployed successfully!' });
-    // } catch (err) {
-    //   this.setState({ errorMessage: err.message });
-    // }
-    //
     this.setState({ loading: false });
   };
 
@@ -279,7 +253,7 @@ class Factory extends Component {
 
   render() {
     let last=this.state.chainsPerPage;
-    let statusMessage="";
+    let statusMessage;
     let that = this;
 
 
@@ -400,17 +374,6 @@ class Factory extends Component {
       }
       return pageNumbers;
     }
-
-    //TODO: remove this
-    // renderPageNumbers(pageNumbers) {
-    //   const renderPageNumbers = pageNumbers.map(number => {
-    //     return (
-    //       <Button key={number} id={number} onClick={this.handleClick}>{number}</Button>
-    //     );
-    //   });
-    // }
-
-
 }
 
 export default Factory;

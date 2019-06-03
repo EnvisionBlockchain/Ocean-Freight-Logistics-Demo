@@ -2,9 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Table from "semantic-ui-react/dist/commonjs/collections/Table/Table";
 
-
-
-
 export default () => (
   <div>
     <Table>

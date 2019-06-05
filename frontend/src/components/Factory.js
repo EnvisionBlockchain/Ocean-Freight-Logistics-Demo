@@ -191,7 +191,7 @@ class Factory extends Component {
           </Grid.Column>
           <Grid.Column width={4}>
             <Grid.Row>
-              <Modal trigger={<Button primary icon labelPosition='right'><Icon name='plus circle' />New Supply Chain</Button>}>
+              <Modal trigger={<Button primary icon labelPosition='right'><Icon name='plus circle' />New Shipment</Button>}>
                 <Modal.Header>Deploy New Supply Chain</Modal.Header>
                 <Modal.Content>
                   <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>

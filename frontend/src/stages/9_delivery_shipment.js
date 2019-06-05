@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Loader, Dimmer, Form, Button, Input, Message, Modal, Card } from 'semantic-ui-react';
+import { Button, Card, Dimmer, Form, Grid, Input, Loader, Message, Modal } from 'semantic-ui-react';
 import SparkMD5 from 'spark-md5';
 import { azureDownload } from "../utils";
 
@@ -114,9 +114,25 @@ class DeliveryOrder extends Component {
     return (
       <div>
         <br /> <br />
-        <h3>Pending Action: </h3>
 
-        <a href={this.state.deliveryOrderDocsURL} download={this.state.deliveryOrderDocsURL}><Button primary>Download Delivery Docs</Button></a>
+        <Grid stackable>
+          <Grid.Row>
+            <Grid.Column width={8}>
+              <iframe title='Release Docs' src={this.state.deliveryOrderDocsURL + '&rsct=application%2Fpdf&embedded=true'} width="450px" height="600rm" />
+            </Grid.Column>
+          </Grid.Row>
+        </Grid>
+
+        <br /><br />
+
+        <Grid>
+          <Grid.Row>
+            <a href={this.state.deliveryOrderDocsURL} download={this.state.deliveryOrderDocsURL}><Button primary>Download Delivery Docs</Button></a>
+          </Grid.Row>
+        </Grid>
+
+        <br /><br />
+
         <Modal trigger={<Button primary basic>VERIFY</Button>}>
           <Modal.Header>Verify The Downloaded Documents</Modal.Header>
           <Modal.Content>

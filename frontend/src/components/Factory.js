@@ -184,14 +184,14 @@ class Factory extends Component {
 
     return (
       <div>
-        <h1>Deployed Supplychain Transportation Contracts</h1>
+        <h1>Deployed Supply Chain Transportation Contracts</h1>
         <Grid stackable reversed='mobile'>
           <Grid.Column width={12}>
             {(this.state.deployedChainsAddr.length > 0 && this.renderChains()) || <b>No contracts deployed!</b>}
           </Grid.Column>
           <Grid.Column width={4}>
             <Grid.Row>
-              <Modal trigger={<Button primary icon labelPosition='right'><Icon name='plus circle' />New Supply Chain</Button>}>
+              <Modal trigger={<Button primary icon labelPosition='right'><Icon name='plus circle' />New Shipment</Button>}>
                 <Modal.Header>Deploy New Supply Chain</Modal.Header>
                 <Modal.Content>
                   <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Loader, Dimmer, Form, Button, Input, Message, Modal, Progress } from 'semantic-ui-react';
+import { Button, Dimmer, Form, Grid, Input, Loader, Message, Modal, Progress } from 'semantic-ui-react';
 import SparkMD5 from 'spark-md5';
 import { azureDownload, azureUpload } from "../utils";
 
@@ -125,7 +125,25 @@ class RecoverOrder extends Component {
     return (
       <div>
         <br /><br />
-        <a href={this.state.releaseOrderDocsURL} download={this.state.releaseOrderDocsURL}><Button primary>Download Release Docs</Button></a>
+
+        <Grid stackable>
+          <Grid.Row>
+            <Grid.Column width={8}>
+              <iframe title='Release Docs' src={this.state.releaseOrderDocsURL + '&rsct=application%2Fpdf&embedded=true'} width="450px" height="600rm" />
+            </Grid.Column>
+          </Grid.Row>
+        </Grid>
+
+        <br /><br />
+
+        <Grid>
+          <Grid.Row>
+            <a target="_blank" href={this.state.releaseOrderDocsURL} download={this.state.releaseOrderDocsURL}><Button primary>Download Release Docs</Button></a>
+          </Grid.Row>
+        </Grid>
+
+        <br /><br />
+
         <Modal trigger={<Button primary basic>VERIFY</Button>}>
           <Modal.Header>Verify The Downloaded Documents</Modal.Header>
           <Modal.Content>

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Loader, Dimmer, Form, Button, Input, Message, Modal, Progress } from 'semantic-ui-react';
+import { Button, Dimmer, Form, Grid, Input, Loader, Message, Modal, Progress } from 'semantic-ui-react';
 import SparkMD5 from 'spark-md5';
 import { azureDownload, azureUpload } from "../utils";
 
@@ -157,8 +157,25 @@ class ImportClearance extends Component {
       <div>
         <br /><br />
 
-        <a href={this.state.shippingURL} download={this.state.shippingURL}><Button primary>Download Shipping Docs</Button></a>
-        <a href={this.state.laddingURL} download={this.state.laddingURL}><Button primary>Download Bill of Ladding</Button></a>
+        <Grid stackable>
+          <Grid.Row>
+            <Grid.Column width={8}>
+              <iframe title='Shipping Docs' src={this.state.shippingURL + '&rsct=application%2Fpdf&embedded=true'} width="450px" height="600rm" />
+            </Grid.Column>
+            <Grid.Column width={8}>
+              <iframe title='Ladding Docs' src={this.state.laddingURL + '&rsct=application%2Fpdf&embedded=true'} width="450px" height="600rm" />
+            </Grid.Column>
+          </Grid.Row>
+        </Grid>
+
+        <br /><br />
+
+        <Grid>
+          <Grid.Row>
+            <a target="_blank" href={this.state.shippingURL} download={this.state.shippingURL}><Button primary>Download Shipping Docs</Button></a>
+            <a target="_blank" href={this.state.laddingURL} download={this.state.laddingURL}><Button primary>Download Bill of Ladding</Button></a>
+          </Grid.Row>
+        </Grid>
 
         <br /><br />
 

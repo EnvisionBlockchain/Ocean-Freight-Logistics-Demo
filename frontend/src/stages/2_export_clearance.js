@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Loader, Dimmer, Button, Message, Modal, Form, Input } from 'semantic-ui-react';
+import { Button, Dimmer, Form, Grid, Input, Loader, Message, Modal } from 'semantic-ui-react';
 import { azureDownload } from "../utils";
 import SparkMD5 from 'spark-md5';
 
@@ -124,10 +124,29 @@ class ExportClearanceAction extends Component {
     }
 
     return (
-      <div><br /><br />
+      <div>
+        <br /><br />
 
-        <a href={this.state.cfURL} download={this.state.cfURL}><Button primary>Download Export Docs</Button></a>
-        <a href={this.state.cURL} download={this.state.cfURL}><Button primary>Download Customs Docs</Button></a>
+        <Grid stackable>
+          <Grid.Row>
+            <Grid.Column width={8}>
+              <iframe title='Export Docs' src={this.state.cfURL + '&rsct=application%2Fpdf&embedded=true'} width="450px" height="600rm" />
+            </Grid.Column>
+            <Grid.Column width={8}>
+              <iframe title='Customs Docs' src={this.state.cURL + '&rsct=application%2Fpdf&embedded=true'} width="450px" height="600rm" />
+            </Grid.Column>
+          </Grid.Row>
+        </Grid>
+
+        <br /><br />
+
+        <Grid>
+          <Grid.Row>
+            <a href={this.state.cfURL} download={this.state.cfURL}><Button primary>Download Export Docs</Button></a>
+            <a href={this.state.cURL} download={this.state.cfURL}><Button primary>Download Customs Docs</Button></a>
+          </Grid.Row>
+        </Grid>
+
 
         <br /><br />
 

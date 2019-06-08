@@ -127,7 +127,7 @@ class Home extends Component {
     let dateTime = calDateTime(metaData._lastAction[0]);
     return (
       <div>
-        <h1>Supply Chain Transportation #{this.props.location.state.contractNo + 1}</h1>
+        <h1>Supply Chain Transportation</h1>
         <h3>Contract State:<span style={{ "color": "red" }}> {stateLabel[contractState][0]}</span></h3>
 
         <Grid stackable reversed="mobile">
@@ -152,17 +152,6 @@ class Home extends Component {
                     </Header>
                   </Table.Cell>
                   <Table.Cell>{this.props.match.params.chainAddress}</Table.Cell>
-                </Table.Row>
-
-                <Table.Row>
-                  <Table.Cell>
-                    <Header as='h4'>
-                      <Header.Content>
-                        Contract #
-                      </Header.Content>
-                    </Header>
-                  </Table.Cell>
-                  <Table.Cell>{this.props.location.state.contractNo + 1}</Table.Cell>
                 </Table.Row>
 
                 <Table.Row>
